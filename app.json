@@ -1,24 +1,60 @@
 {
   "expo": {
-    "name": "kazmo",
+    "name": "KAZMO",
     "slug": "kazmo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#080814"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.kazmo.login",
+      "buildNumber": "2",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Kazmo utilise la camera pour votre photo de profil.",
+        "NSPhotoLibraryUsageDescription": "Kazmo accede a vos photos pour votre photo de profil.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.kazmo.app",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#080814",
+        "foregroundImage": "./assets/android-icon-foreground.png"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-apple-authentication",
+      "expo-notifications",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.579139707826-mhh95e0puqmlnkbg156uen66piipm023"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3cf98fe2-b872-475b-bb43-e6034ec85261"
+      }
+    },
+    "owner": "jackomel69",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3cf98fe2-b872-475b-bb43-e6034ec85261"
     }
   }
 }
