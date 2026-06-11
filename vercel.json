@@ -1,5 +1,5 @@
 {
-  "buildCommand": null,
+  "buildCommand": "",
   "outputDirectory": "public",
   "routes": [
     { "src": "/privacy", "dest": "/privacy.html" },
