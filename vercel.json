@@ -1,20 +1,8 @@
 {
-  "rewrites": [
-    {
-      "source": "/privacy",
-      "destination": "/public/privacy.html"
-    },
-    {
-      "source": "/terms",
-      "destination": "/public/terms.html"
-    },
-    {
-      "source": "/confirm.html",
-      "destination": "/public/confirm.html"
-    },
-    {
-      "source": "/confirm",
-      "destination": "/public/confirm.html"
-    }
+  "routes": [
+    { "src": "/privacy", "dest": "/public/privacy.html" },
+    { "src": "/terms", "dest": "/public/terms.html" },
+    { "src": "/confirm.html", "dest": "/public/confirm.html" },
+    { "src": "/confirm", "dest": "/public/confirm.html" }
   ]
 }
