@@ -1,8 +1,10 @@
 {
+  "buildCommand": null,
+  "outputDirectory": "public",
   "routes": [
     { "src": "/privacy", "dest": "/privacy.html" },
     { "src": "/terms", "dest": "/terms.html" },
-    { "src": "/confirm.html", "dest": "/public/confirm.html" },
-    { "src": "/confirm", "dest": "/public/confirm.html" }
+    { "src": "/confirm.html", "dest": "/confirm.html" },
+    { "src": "/confirm", "dest": "/confirm.html" }
   ]
 }
