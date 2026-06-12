@@ -109,7 +109,7 @@ export default function AuthScreen({ onLogin, onSignup }) {
           onLogin(data.user);
         }
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: 'https://www.kazmo.app/confirm.html' } });
         if (error) throw error;
         if (data.user) {
           await saveProfile(data.user.id, data.user.email, '', '', null);

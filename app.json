@@ -51,10 +51,7 @@
     "extra": {
       "eas": {
         "projectId": "3cf98fe2-b872-475b-bb43-e6034ec85261"
-      },
-      "anthropicKey": "$$ANTHROPIC_API_KEY",
-      "apiSportsKey": "$$API_SPORTS_KEY",
-      "rapidapiGolfKey": "$$RAPIDAPI_GOLF_KEY"
+      }
     },
     "owner": "jackomel69",
     "runtimeVersion": {
