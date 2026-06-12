@@ -207,7 +207,7 @@ export default function NHLScreen({ onBack, user }) {
           {tab === 'finales' && (
             <View>
               <View style={styles.finalesCard}>
-                <Text style={styles.finalesTitle}>🏆 FINALES NHL 2026</Text>
+                <Text style={styles.finalesTitle}>🏆 {t('finals')} NHL 2026</Text>
                 <Text style={styles.finalesSub}>Best of 7</Text>
                 <View style={styles.finalesTeams}>
                   <View style={styles.finalesTeam}>
@@ -219,7 +219,7 @@ export default function NHLScreen({ onBack, user }) {
                   </View>
                   <View style={styles.finalesMiddle}>
                     <Text style={styles.finalesVs}>-</Text>
-                    <Text style={styles.finalesSerieLabel}>VICTOIRES</Text>
+                    <Text style={styles.finalesSerieLabel}>{t('victories')}</Text>
                   </View>
                   <View style={styles.finalesTeam}>
                     <View style={[styles.logoPlaceholder, { backgroundColor:'#B4975A22', borderColor:'#B4975A44' }]}>
@@ -240,10 +240,10 @@ export default function NHLScreen({ onBack, user }) {
                     activeOpacity={0.8}
                     onPress={() => setSelectedMatch(buildMatch(g))}>
                     <View style={styles.matchCardHeader}>
-                      <Text style={styles.matchLabel}>MATCH {i+1}</Text>
+                      <Text style={styles.matchLabel}>{t('match')} {i+1}</Text>
                       {isLive ? <Text style={styles.liveLabel}>● LIVE</Text> : null}
                       {isFinished ? <Text style={styles.finishedLabel}>Terminé</Text> : null}
-                      <Text style={styles.tapHint}>Voir détails →</Text>
+                      <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                     </View>
                     <View style={styles.matchTeams}>
                       <View style={styles.matchTeamLeft}>
@@ -279,7 +279,7 @@ export default function NHLScreen({ onBack, user }) {
                     <View style={styles.matchCardHeader}>
                       {isLive ? <Text style={styles.liveLabel}>● LIVE {g.status.short}</Text> : null}
                       {isFinished ? <Text style={styles.finishedLabel}>Terminé</Text> : null}
-                      <Text style={styles.tapHint}>Voir détails →</Text>
+                      <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                     </View>
                     <View style={styles.matchTeams}>
                       <View style={styles.matchTeamLeft}>

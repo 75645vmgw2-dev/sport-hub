@@ -45,7 +45,7 @@ function formatDate(date) {
 function PeriodSelector({ active, onSelect, color }) {
   return (
     <View style={styles.periodRow}>
-      <Text style={styles.periodLabel}>Derniers :</Text>
+      <Text style={styles.periodLabel}>{t('last')} :</Text>
       {PERIODS.map(function(p) {
         return (
           <TouchableOpacity key={p}
@@ -280,16 +280,16 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
     if (homeForm && homeForm.length > 0) {
       const shown = homeForm.slice(0, 5);
       const wins = shown.filter(function(g) { return g.win; }).length;
-      context += match.home + ' — ' + wins + 'V/' + (shown.length-wins) + 'D sur les 5 derniers matchs.\n';
-      context += 'Résultats : ' + shown.map(function(g) {
+      context += match.home + ' — ' + wins + 'W/' + (shown.length-wins) + 'L in last 5 games.\n';
+      context += 'Results: ' + shown.map(function(g) {
         const res = g.myScore > g.oppScore ? 'V' : g.myScore < g.oppScore ? 'D' : 'N'; return res + ' ' + g.myScore + '-' + g.oppScore + ' vs ' + g.opp;
       }).join(', ') + '\n\n';
     }
     if (awayForm && awayForm.length > 0) {
       const shown = awayForm.slice(0, 5);
       const wins = shown.filter(function(g) { return g.win; }).length;
-      context += match.away + ' — ' + wins + 'V/' + (shown.length-wins) + 'D sur les 5 derniers matchs.\n';
-      context += 'Résultats : ' + shown.map(function(g) {
+      context += match.away + ' — ' + wins + 'W/' + (shown.length-wins) + 'L in last 5 games.\n';
+      context += 'Results: ' + shown.map(function(g) {
         const res = g.myScore > g.oppScore ? 'V' : g.myScore < g.oppScore ? 'D' : 'N'; return res + ' ' + g.myScore + '-' + g.oppScore + ' vs ' + g.opp;
       }).join(', ') + '\n\n';
     }
@@ -786,7 +786,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
                   {String(match.homeScore||0)}-{String(match.awayScore||0)}
                 </Text>
                 {match.isLive&&<Text style={styles.liveText}>● LIVE {match.status}</Text>}
-                {match.isFinished&&<Text style={styles.finishedText}>TERMINÉ</Text>}
+                {match.isFinished&&<Text style={styles.finishedText}>{t('finished')}</Text>}
               </>
             ) : (
               <>
