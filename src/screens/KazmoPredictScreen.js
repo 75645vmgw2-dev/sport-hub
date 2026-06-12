@@ -18,6 +18,16 @@ const H_GOLF = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.golf.a
 
 const H_ANTHROPIC = { 'Content-Type':'application/json', 'x-api-key':ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' };
 
+const TIMING_MESSAGES = {
+  fr: ['⏱ JUSQU'À 30 SECONDES', 'Kazmo recherche des données en temps réel'],
+  en: ['⏱ THIS MAY TAKE UP TO 30 SECONDS', 'Kazmo is searching real-time data'],
+  es: ['⏱ HASTA 30 SEGUNDOS', 'Kazmo busca datos en tiempo real'],
+  pt: ['⏱ ATÉ 30 SEGUNDOS', 'Kazmo está buscando dados em tempo real'],
+  de: ['⏱ BIS ZU 30 SEKUNDEN', 'Kazmo sucht Echtzeit-Daten'],
+  it: ['⏱ FINO A 30 SECONDI', 'Kazmo sta cercando dati in tempo reale'],
+  ar: ['⏱ حتى 30 ثانية', 'يبحث Kazmo عن بيانات في الوقت الفعلي'],
+  ru: ['⏱ ДО 30 СЕКУНД', 'Kazmo ищет данные в реальном времени'],
+};
 const STATUS_MESSAGES = {
   fr: ['🔍 Recherche des blessés...','📊 Analyse de la forme récente...','🎯 Calcul des probabilités...','🧠 Génération du pronostic...'],
   en: ['🔍 Searching for injuries...','📊 Analyzing recent form...','🎯 Calculating probabilities...','🧠 Generating prediction...'],
@@ -428,7 +438,26 @@ export default function KazmoPredictScreen({ onBack }) {
     );
   }
 
-  if(loading){return(<SafeAreaView style={styles.container}><View style={styles.center}><LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.loadingAvatar}><Text style={styles.loadingAvatarText}>K</Text></LinearGradient><Text style={styles.loadingTitle}>KAZMO ANALYSIS</Text><Text style={styles.loadingStatus}>{statusMessages[statusMsgIndex]}</Text><ActivityIndicator color="#FF6B2B" size="large" style={{marginTop:16}}/><Text style={{color:'#ffffff33',fontSize:11,fontFamily:'BebasNeue',letterSpacing:1,marginTop:12}}>⏱ UP TO 30 SECONDS</Text></View></SafeAreaView>);}
+  if(loading){return(
+    <SafeAreaView style={styles.container}>
+      <View style={styles.center}>
+        <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.loadingAvatar}>
+          <Text style={styles.loadingAvatarText}>K</Text>
+        </LinearGradient>
+        <Text style={styles.loadingTitle}>KAZMO ANALYSIS</Text>
+        <Text style={{color:'#ffffff55',fontSize:12,letterSpacing:2,fontFamily:'BebasNeue',marginTop:4,marginBottom:24}}>AI SPORTS INTELLIGENCE</Text>
+        <View style={{backgroundColor:'#16162a',borderRadius:16,padding:20,width:'85%',alignItems:'center',borderWidth:1,borderColor:'#FF6B2B33'}}>
+          <Text style={{fontSize:28,marginBottom:8}}>{['🔍','📊','🧬','🌐','🎯','🧠'][statusMsgIndex%6]}</Text>
+          <Text style={[styles.loadingStatus,{fontSize:14,minHeight:40,textAlign:'center'}]}>{statusMessages[statusMsgIndex]}</Text>
+        </View>
+        <ActivityIndicator color="#FF6B2B" size="large" style={{marginTop:24}}/>
+        <View style={{backgroundColor:'#FFD60011',borderRadius:10,paddingHorizontal:16,paddingVertical:8,marginTop:16,borderWidth:1,borderColor:'#FFD60033'}}>
+          <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:13,letterSpacing:1,textAlign:'center'}}>{(TIMING_MESSAGES[language]||TIMING_MESSAGES['en'])[0]}</Text>
+          <Text style={{color:'#ffffff44',fontSize:10,textAlign:'center',marginTop:4}}>{(TIMING_MESSAGES[language]||TIMING_MESSAGES['en'])[1]}</Text>
+        </View>
+      </View>
+    </SafeAreaView>
+  );}
 
   if(!mode){return(<SafeAreaView style={styles.container}><ScrollView contentContainerStyle={styles.scroll}><View style={styles.header}><TouchableOpacity onPress={onBack}><Text style={styles.backBtnText}>←</Text></TouchableOpacity><GradientText text={t('kazmoPredict')} fontSize={22} letterSpacing={1}/></View><Text style={styles.modeSubtitle}>{t('kazmoPredictSub')}</Text><Text style={styles.modeTitle}>{t('chooseType').toUpperCase()}</Text><TouchableOpacity style={styles.modeCard} activeOpacity={0.85} onPress={()=>setMode('simple')}><LinearGradient colors={['#1D428A22','#1D428A44']} style={styles.modeCardGradient}><Text style={styles.modeIcon}>🎯</Text><View style={{flex:1}}><Text style={styles.modeLabel}>ANALYSE MATCH</Text><Text style={styles.modeDesc}>1 vs 1 · Analyse complète</Text></View><Text style={styles.modeArrow}>›</Text></LinearGradient></TouchableOpacity><TouchableOpacity style={styles.modeCard} activeOpacity={0.85} onPress={()=>setMode('parlay')}><LinearGradient colors={['#9C27B022','#9C27B044']} style={styles.modeCardGradient}><Text style={styles.modeIcon}>🎰</Text><View style={{flex:1}}><Text style={styles.modeLabel}>COMBINÉ</Text><Text style={styles.modeDesc}>2-5 matchs · Multi-analyse</Text></View><Text style={styles.modeArrow}>›</Text></LinearGradient></TouchableOpacity><TouchableOpacity style={styles.modeCard} activeOpacity={0.85} onPress={()=>setMode('prono')}><LinearGradient colors={['#FF6B2B22','#FFD60022']} style={styles.modeCardGradient}><Text style={styles.modeIcon}>🔭</Text><View style={{flex:1}}><Text style={styles.modeLabel}>PRONOSTIC SAISON</Text><Text style={styles.modeDesc}>Champion, MVP · Tendances</Text></View><Text style={styles.modeArrow}>›</Text></LinearGradient></TouchableOpacity></ScrollView></SafeAreaView>);}
 

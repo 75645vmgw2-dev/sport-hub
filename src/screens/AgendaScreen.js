@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   tabBar: { flexDirection:'row', gap:6 },
   tabBtn: { paddingHorizontal:16, paddingVertical:8, borderRadius:10, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   tabBtnText: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:12, letterSpacing:0.5 },
-  filtersScroll: { maxHeight:44, marginHorizontal:16, marginBottom:8 },
+  filtersScroll: { maxHeight:52, marginHorizontal:16, marginBottom:8 },
   filtersRow: { flexDirection:'row', gap:6, paddingRight:16 },
   filterBtn: { flexDirection:'row', alignItems:'center', gap:4, paddingHorizontal:12, paddingVertical:7, borderRadius:20, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   filterBtnActive: { backgroundColor:'#FF6B2B', borderColor:'#FF6B2B' },

@@ -59,6 +59,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/3cf98fe2-b872-475b-bb43-e6034ec85261"
-    }
+    },
+    "scheme": "kazmo"
   }
 }

@@ -352,7 +352,7 @@ function PlanifierTab() {
   const sent = scheduled.filter(function(s){ return s.sent; });
 
   return (
-    <ScrollView contentContainerStyle={{padding:16, paddingBottom:40}} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={{padding:16, paddingBottom:40}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
 
       {/* Notifs planifiées en attente */}
       {pending.length > 0 && (
