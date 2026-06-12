@@ -19,7 +19,7 @@ const H_GOLF = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.golf.a
 const H_ANTHROPIC = { 'Content-Type':'application/json', 'x-api-key':ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' };
 
 const TIMING_MESSAGES = {
-  fr: ['⏱ JUSQU'À 30 SECONDES', 'Kazmo recherche des données en temps réel'],
+  fr: ['⏱ JUSQU A 30 SECONDES', 'Kazmo recherche des données en temps réel'],
   en: ['⏱ THIS MAY TAKE UP TO 30 SECONDS', 'Kazmo is searching real-time data'],
   es: ['⏱ HASTA 30 SEGUNDOS', 'Kazmo busca datos en tiempo real'],
   pt: ['⏱ ATÉ 30 SEGUNDOS', 'Kazmo está buscando dados em tempo real'],
