@@ -251,7 +251,7 @@ export default function IconPreviewScreen({ onBack }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={styles.backBtn}>← Retour</Text>
+          <Text style={styles.backBtn}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>ICÔNE KAZMO</Text>
       </View>

@@ -529,7 +529,7 @@ export default function GolfScreen({ onBack, user }) {
                     <View style={styles.tournHeader}>
                       {isCurrent && (
                         <View style={[styles.liveBadge,{backgroundColor:C+'33',borderColor:C+'66'}]}>
-                          <Text style={[styles.liveBadgeText,{color:C}]}>⛳ EN COURS</Text>
+                          <Text style={[styles.liveBadgeText,{color:C}]}>⛳ LIVE</Text>
                         </View>
                       )}
                       {purseNum > 0 ? (

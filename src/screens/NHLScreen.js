@@ -136,7 +136,7 @@ export default function NHLScreen({ onBack, user }) {
       <View style={{ flex:1 }}>
         <MatchDetailScreen match={selectedMatch} sport="NHL" color={C} onBack={() => setSelectedMatch(null)} />
         <TouchableOpacity onPress={() => setSelectedMatch(null)} style={styles.backToScreen}>
-          <Text style={styles.backToScreenText}>← Retour NHL</Text>
+          <Text style={styles.backToScreenText}>← Back</Text>
         </TouchableOpacity>
       </View>
     );

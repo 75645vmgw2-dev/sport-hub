@@ -82,17 +82,17 @@ function WorldCupBanner({ onPress }) {
             <View style={{flexDirection:'row',alignItems:'center',gap:8,marginBottom:4}}>
               {isLive ? (
                 <View style={{backgroundColor:'#ff174422',borderRadius:6,paddingHorizontal:8,paddingVertical:2,borderWidth:1,borderColor:'#ff174444'}}>
-                  <Text style={{color:'#ff1744',fontFamily:'BebasNeue',fontSize:10,fontWeight:'700'}}>● EN COURS</Text>
+                  <Text style={{color:'#ff1744',fontFamily:'BebasNeue',fontSize:10,fontWeight:'700'}}>● LIVE</Text>
                 </View>
               ) : (
                 <View style={{backgroundColor:'#FFD70022',borderRadius:6,paddingHorizontal:8,paddingVertical:2,borderWidth:1,borderColor:'#FFD70044'}}>
-                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:10}}>⏰ DANS {daysLeft}J</Text>
+                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:10}}>⏰ IN {daysLeft}D</Text>
                 </View>
               )}
-              <Text style={{color:'#ffffff88',fontSize:10}}>USA · Canada · Mexique</Text>
+              <Text style={{color:'#ffffff88',fontSize:10}}>USA · Canada · Mexico</Text>
             </View>
-            <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:20,letterSpacing:1}}>🌍 COUPE DU MONDE 2026</Text>
-            <Text style={{color:'#ffffff88',fontSize:11,marginTop:2}}>48 équipes · 104 matchs · 16 juin → 19 juil.</Text>
+            <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:20,letterSpacing:1}}>🌍 FIFA WORLD CUP 2026</Text>
+            <Text style={{color:'#ffffff88',fontSize:11,marginTop:2}}>48 teams · 104 matches · Jun 16 → Jul 19</Text>
           </View>
           <Text style={{fontSize:32}}>⚽</Text>
         </View>

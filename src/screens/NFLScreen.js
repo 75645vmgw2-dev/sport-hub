@@ -119,7 +119,7 @@ export default function NFLScreen({ onBack, user }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack}><Text style={styles.backBtnText}>← Retour</Text></TouchableOpacity>
+        <TouchableOpacity onPress={onBack}><Text style={styles.backBtnText}>← Back</Text></TouchableOpacity>
         <View style={styles.titleRow}>
           <Text style={styles.titleWhite}>NFL </Text>
           <GradientText text="2025" fontSize={22} letterSpacing={1} />

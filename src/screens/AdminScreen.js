@@ -1344,7 +1344,7 @@ export default function AdminScreen({ onClose, adminUser }) {
       {tab==='match' && showMatchForm && (
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.formHeader}>
-            <TouchableOpacity onPress={()=>{setShowMatchForm(false);setEditingMatch(null);}}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
+            <TouchableOpacity onPress={()=>{setShowMatchForm(false);setEditingMatch(null);}}><Text style={styles.formBack}>← Back</Text></TouchableOpacity>
             <Text style={styles.formTitle}>{editingMatch?'Modifier Match':'Programmer Match'}</Text>
           </View>
           <Text style={styles.fieldLabel}>Sport *</Text>
@@ -1477,7 +1477,7 @@ export default function AdminScreen({ onClose, adminUser }) {
       {tab==='events' && showEventForm && (
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.formHeader}>
-            <TouchableOpacity onPress={()=>{setShowEventForm(false);setEditingEvent(null);}}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
+            <TouchableOpacity onPress={()=>{setShowEventForm(false);setEditingEvent(null);}}><Text style={styles.formBack}>← Back</Text></TouchableOpacity>
             <Text style={styles.formTitle}>{editingEvent?'Modifier Événement':'Nouvel Événement'}</Text>
           </View>
           <Text style={styles.fieldLabel}>Icône *</Text>
@@ -1558,7 +1558,7 @@ export default function AdminScreen({ onClose, adminUser }) {
       {tab==='flash' && showForm && (
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.formHeader}>
-            <TouchableOpacity onPress={()=>{setShowForm(false);setEditingFlash(null);}}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
+            <TouchableOpacity onPress={()=>{setShowForm(false);setEditingFlash(null);}}><Text style={styles.formBack}>← Back</Text></TouchableOpacity>
             <Text style={styles.formTitle}>{editingFlash?'Modifier Flash':'Nouveau Flash'}</Text>
           </View>
           <Text style={styles.fieldLabel}>Sport / Competition *</Text>
@@ -1620,7 +1620,7 @@ export default function AdminScreen({ onClose, adminUser }) {
       {tab==='admins' && showAddAdmin && (
         <ScrollView contentContainerStyle={styles.scroll}>
           <View style={styles.formHeader}>
-            <TouchableOpacity onPress={()=>setShowAddAdmin(false)}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
+            <TouchableOpacity onPress={()=>setShowAddAdmin(false)}><Text style={styles.formBack}>← Back</Text></TouchableOpacity>
             <Text style={styles.formTitle}>Nouvel Admin</Text>
           </View>
           <Text style={styles.fieldLabel}>Sélectionner un utilisateur</Text>

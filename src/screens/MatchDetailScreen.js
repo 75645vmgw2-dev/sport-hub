@@ -11,6 +11,10 @@ const TABS = [
   { id:'stats', label:'STATS' },
   { id:'news', label:'NEWS' },
 ];
+const GOLF_TABS = [
+  { id:'news', label:'NEWS' },
+  { id:'stats', label:'KAZMO ASSISTANT' },
+];
 const PERIODS = [3, 5, 10];
 const H_NBA = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v2.nba.api-sports.io' };
 const H_NHL = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.hockey.api-sports.io' };
@@ -170,7 +174,7 @@ function AISection({ content, loading, onRefresh }) {
       </LinearGradient>
       <Text style={styles.aiText}>{content}</Text>
       <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
-        <Text style={styles.refreshText}>↻ Actualiser</Text>
+        <Text style={styles.refreshText}>↻ Refresh</Text>
       </TouchableOpacity>
     </View>
   );
@@ -278,7 +282,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
       const wins = shown.filter(function(g) { return g.win; }).length;
       context += match.home + ' — ' + wins + 'V/' + (shown.length-wins) + 'D sur les 5 derniers matchs.\n';
       context += 'Résultats : ' + shown.map(function(g) {
-        return (g.win?'V':'D') + ' ' + g.myScore + '-' + g.oppScore + ' vs ' + g.opp;
+        const res = g.myScore > g.oppScore ? 'V' : g.myScore < g.oppScore ? 'D' : 'N'; return res + ' ' + g.myScore + '-' + g.oppScore + ' vs ' + g.opp;
       }).join(', ') + '\n\n';
     }
     if (awayForm && awayForm.length > 0) {
@@ -286,7 +290,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
       const wins = shown.filter(function(g) { return g.win; }).length;
       context += match.away + ' — ' + wins + 'V/' + (shown.length-wins) + 'D sur les 5 derniers matchs.\n';
       context += 'Résultats : ' + shown.map(function(g) {
-        return (g.win?'V':'D') + ' ' + g.myScore + '-' + g.oppScore + ' vs ' + g.opp;
+        const res = g.myScore > g.oppScore ? 'V' : g.myScore < g.oppScore ? 'D' : 'N'; return res + ' ' + g.myScore + '-' + g.oppScore + ' vs ' + g.opp;
       }).join(', ') + '\n\n';
     }
     if (homePlayers && homePlayers.length > 0) {
@@ -388,7 +392,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
       const context = buildRealContext();
       const prompt = 'DONNÉES RÉELLES :\n' + context +
         '\nEn te basant UNIQUEMENT sur ces données, fournis les ' + tabName +
-        ' pour ' + match.home + ' vs ' + match.away + ' en ' + sportName + '. Réponds en français, sois concis.';
+        ' pour ' + match.home + ' vs ' + match.away + ' en ' + sportName + '. Answer in the user's language: ' + (language||'en') + ', sois concis.';
       const text = await callAnthropic(prompt);
       setAiContent(text);
       setAiLoaded(true);
@@ -413,7 +417,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
           const opp = isHome?g.scores.visitors.points:g.scores.home.points;
           const oppTeam = isHome?g.teams.visitors:g.teams.home;
           return { date:(g.date.start||'').slice(5,10), opp:oppTeam.name||'', oppLogo:oppTeam.logo||null,
-            myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), home:isHome };
+            myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), draw:(my||0)===(opp||0), home:isHome };
         });
     }
     setHomeForm(parse(homeData, match.homeId));
@@ -467,7 +471,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
           const opp = isHome?g.scores.away:g.scores.home;
           const oppTeam = isHome?g.teams.away:g.teams.home;
           return { date:(g.date||'').slice(5,10), opp:oppTeam.name||'', oppLogo:oppTeam.logo||null,
-            myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), home:isHome };
+            myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), draw:(my||0)===(opp||0), home:isHome };
         });
     }
     setHomeForm(parse(homeData, match.homeId));
@@ -492,7 +496,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
           const opp = isHome?g.scores.away.total:g.scores.home.total;
           const oppTeam = isHome?g.teams.away:g.teams.home;
           return { date:(g.date||'').slice(5,10), opp:oppTeam.name||'', oppLogo:oppTeam.logo||null,
-            myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), home:isHome };
+            myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), draw:(my||0)===(opp||0), home:isHome };
         });
     }
     setHomeForm(parse(homeData, match.homeId));
@@ -514,7 +518,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
         const opp = isHome?f.goals.away:f.goals.home;
         const oppTeam = isHome?f.teams.away:f.teams.home;
         return { date:(f.fixture.date||'').slice(5,10), opp:oppTeam.name||'', oppLogo:oppTeam.logo||null,
-          myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), home:isHome };
+          myScore:my||0, oppScore:opp||0, win:(my||0)>(opp||0), draw:(my||0)===(opp||0), home:isHome };
       });
     }
     setHomeForm(parse(homeData, match.homeId));
@@ -577,17 +581,17 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
       const isLive = match.isLive;
       let prompt = '';
       if (isFinished) {
-        prompt = 'DONNÉES RÉELLES match TERMINÉ :\n' + context;
+        prompt = 'REAL DATA - FINISHED match :\n' + context;
         if (match.homeScore!==null && match.awayScore!==null) {
-          prompt += '\nScore final : ' + match.home + ' ' + match.homeScore + '-' + match.awayScore + ' ' + match.away + '\n';
+          prompt += '\nFinal score: ' + match.home + ' ' + match.homeScore + '-' + match.awayScore + ' ' + match.away + '\n';
         }
-        prompt += '\nAnalyse ce résultat en 4-5 phrases. Facteurs clés, performances notables, implications. Réponds en français.';
+        prompt += '\nAnalyze this result in 4-5 sentences. Key factors, notable performances, implications. Answer in the user's language: ' + (language||'en') + '.';
       } else if (isLive) {
-        prompt = 'DONNÉES RÉELLES match EN COURS :\n' + context;
-        prompt += '\nScore actuel : ' + match.home + ' ' + match.homeScore + '-' + match.awayScore + ' ' + match.away + '\n';
-        prompt += '\nAnalyse ce match en cours en 4-5 phrases. Qui domine ? Facteurs clés ? Réponds en français.';
+        prompt = 'REAL DATA - LIVE match :\n' + context;
+        prompt += '\nCurrent score: ' + match.home + ' ' + match.homeScore + '-' + match.awayScore + ' ' + match.away + '\n';
+        prompt += '\nAnalyze this live match in 4-5 sentences. Who is dominating? Key factors? Answer in the user's language: ' + (language||'en') + '.';
       } else {
-        prompt = 'DONNÉES RÉELLES pour prédiction du match du ' + matchDate + ' :\n' + context;
+        prompt = 'REAL DATA - upcoming match on ' + matchDate + ' :\n' + context;
         prompt += '\nEn te basant UNIQUEMENT sur ces données réelles (pas ta mémoire), fais une prédiction pour ' +
           match.home + ' vs ' + match.away + '. Qui est favori ? Joueurs clés ? Score prédit ? 4-5 phrases en français.';
       }
@@ -874,7 +878,10 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
           </View>
         )}
 
-        {tab==='stats' && (
+        {tab==='stats' && sport==='GOLF' && (
+          <GolfAssistant match={match} language={language} />
+        )}
+        {tab==='stats' && sport!=='GOLF' && (
           <View>
             <PeriodSelector active={period} onSelect={setPeriod} color={C} />
             {needsAI ? (
@@ -906,7 +913,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
                 </LinearGradient>
                 <Text style={styles.newsText}>{news}</Text>
                 <TouchableOpacity onPress={fetchNews} style={styles.refreshBtn}>
-                  <Text style={styles.refreshText}>↻ Actualiser</Text>
+                  <Text style={styles.refreshText}>↻ Refresh</Text>
                 </TouchableOpacity>
               </View>
             )}

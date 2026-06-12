@@ -225,7 +225,7 @@ export default function NBAScreen({ onBack, user }) {
       <View style={{ flex:1 }}>
         <MatchDetailScreen match={selectedMatch.match} sport={selectedMatch.sport} color={C} onBack={() => setSelectedMatch(null)} />
         <TouchableOpacity onPress={() => setSelectedMatch(null)} style={styles.backToNBA}>
-          <Text style={styles.backToNBAText}>← Retour NBA</Text>
+          <Text style={styles.backToNBAText}>← Back</Text>
         </TouchableOpacity>
       </View>
     );

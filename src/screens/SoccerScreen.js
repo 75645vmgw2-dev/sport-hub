@@ -191,7 +191,7 @@ export default function SoccerScreen({ onBack, user }) {
       <View style={{ flex:1 }}>
         <MatchDetailScreen match={selectedMatch} sport="SOCCER" color={selectedLeague ? selectedLeague.color : C} onBack={() => setSelectedMatch(null)} />
         <TouchableOpacity onPress={() => setSelectedMatch(null)} style={styles.backToScreen}>
-          <Text style={styles.backToScreenText}>← Retour Football</Text>
+          <Text style={styles.backToScreenText}>← Back Football</Text>
         </TouchableOpacity>
       </View>
     );
@@ -214,7 +214,7 @@ export default function SoccerScreen({ onBack, user }) {
               {new Date(f.fixture.date).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}
             </Text>
           ) : null}
-          <Text style={styles.tapHint}>Voir details →</Text>
+          <Text style={styles.tapHint}>See details →</Text>
         </View>
         <View style={styles.matchTeams}>
           <View style={styles.matchTeamLeft}>

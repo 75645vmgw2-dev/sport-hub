@@ -114,7 +114,7 @@ export default function MLBScreen({ onBack, user }) {
       <View style={{ flex:1 }}>
         <MatchDetailScreen match={selectedMatch} sport="MLB" color={C} onBack={() => setSelectedMatch(null)} />
         <TouchableOpacity onPress={() => setSelectedMatch(null)} style={styles.backToScreen}>
-          <Text style={styles.backToScreenText}>← Retour MLB</Text>
+          <Text style={styles.backToScreenText}>← Back</Text>
         </TouchableOpacity>
       </View>
     );
