@@ -114,19 +114,19 @@ export default function NHLScreen({ onBack, user }) {
       homeId: g.teams.home.id, awayId: g.teams.away.id,
       homeScore: g.scores.home, awayScore: g.scores.away,
       isLive: ['P1','P2','P3','OT'].indexOf(g.status.short) >= 0,
-      isFinished: [{t('finished')},'After Over Time','After Penalties'].indexOf(g.status.long) >= 0,
+      isFinished: ['Finished','After Over Time','After Penalties'].indexOf(g.status.long) >= 0,
       status: g.status.short, date: g.date,
     };
   }
 
   const carWins = finalesGames.filter(function(g) {
-    return [{t('finished')},'After Over Time','After Penalties'].indexOf(g.status.long) >= 0 && (
+    return ['Finished','After Over Time','After Penalties'].indexOf(g.status.long) >= 0 && (
       (g.teams.home.id === 676 && g.scores.home > g.scores.away) ||
       (g.teams.away.id === 676 && g.scores.away > g.scores.home)
     );
   }).length;
   const vgkWins = finalesGames.filter(function(g) {
-    return [{t('finished')},'After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
+    return ['Finished','After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
   }).length - carWins;
 
   if (selectedTeam) {
@@ -233,7 +233,7 @@ export default function NHLScreen({ onBack, user }) {
 
               {finalesGames.map(function(g, i) {
                 const isLive = ['P1','P2','P3','OT'].indexOf(g.status.short) >= 0;
-                const isFinished = [{t('finished')},'After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
+                const isFinished = ['Finished','After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
                 return (
                   <TouchableOpacity key={g.id}
                     style={[styles.matchCard, isLive && { borderColor: C, borderWidth:1 }]}
@@ -270,7 +270,7 @@ export default function NHLScreen({ onBack, user }) {
                 <View style={styles.emptyBox}><Text style={styles.emptyText}>Pas de match en cours</Text></View>
               ) : liveGames.map(function(g) {
                 const isLive = ['P1','P2','P3','OT'].indexOf(g.status.short) >= 0;
-                const isFinished = [{t('finished')},'After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
+                const isFinished = ['Finished','After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
                 return (
                   <TouchableOpacity key={g.id}
                     style={[styles.matchCard, isLive && { borderColor: C, borderWidth:1 }]}
