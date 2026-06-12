@@ -9,7 +9,7 @@ import { API_SPORTS_KEY } from '../api/config';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const H_MLB = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.baseball.api-sports.io' };
-const ANTHROPIC_KEY = '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';
+const ANTHROPIC_KEY = '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';
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,

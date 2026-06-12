@@ -6,7 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const H_F1 = { 'x-rapidapi-key': '25ec321febd869f280179a40232674e7', 'x-rapidapi-host': 'v1.formula-1.api-sports.io' };
-const ANTHROPIC_KEY = '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';
+const ANTHROPIC_KEY = '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';
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,

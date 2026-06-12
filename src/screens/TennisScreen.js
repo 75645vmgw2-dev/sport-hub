@@ -8,7 +8,7 @@ const H_TENNIS = {
   'x-rapidapi-key': '7dd9989aa7mshb92a76c5f12079ap1647a6jsn59bbe08e126e',
   'x-rapidapi-host': 'tennisapi1.p.rapidapi.com'
 };
-const ANTHROPIC_KEY = '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';
+const ANTHROPIC_KEY = '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';
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,

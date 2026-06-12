@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../api/supabase';
 import { API_SPORTS_KEY } from '../api/config';
 
-const ANTHROPIC_KEY = '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';
+const ANTHROPIC_KEY = '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';
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,
@@ -307,7 +307,7 @@ function PlanifierTab() {
     setTranslating(true);
     try {
       const prompt = 'Traduis ces textes dans les 7 langues. Reponds UNIQUEMENT en JSON valide:\n\nTITRE FR: ' + titre + '\nCORPS FR: ' + corps + '\n\n{"titre_en":"...","titre_es":"...","titre_pt":"...","titre_de":"...","titre_it":"...","titre_ar":"...","titre_ru":"...","corps_en":"...","corps_es":"...","corps_pt":"...","corps_de":"...","corps_it":"...","corps_ar":"...","corps_ru":"..."}';
-      const response = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key':'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', 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:2000, messages:[{ role:'user', content:prompt }] }) });
+      const response = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key':'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', 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:2000, messages:[{ role:'user', content:prompt }] }) });
       const data = await response.json();
       const text = (data.content||[]).map(function(c){return c.text||'';}).join('');
       const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
