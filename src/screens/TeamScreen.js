@@ -1,4 +1,4 @@
-import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
+
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { API_SPORTS_KEY, SEASONS, SEASON_LABELS } from '../api/config';
+import { ANTHROPIC_KEY } from '../api/keys';
 import { useLanguage } from '../i18n/LanguageContext';
 
 
