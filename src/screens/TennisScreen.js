@@ -553,7 +553,7 @@ export default function TennisScreen({ onBack, user }) {
   function getMatchStatus(event) {
     const desc = event.status?.description||'';
     if (isMatchLive(desc)) return {label:'LIVE', isLive:true, isFinished:false};
-    if (isMatchFinished(desc)) return {label:desc==='Retired'?'Abandon':desc==='Walkover'?'Walkover':'Terminé', isLive:false, isFinished:true};
+    if (isMatchFinished(desc)) return {label:desc==='Retired'?'Abandon':desc==='Walkover'?'Walkover':t('finished'), isLive:false, isFinished:true};
     if (event.startTimestamp) {
       const d = new Date(event.startTimestamp*1000);
       return {label:d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}), isLive:false, isFinished:false};

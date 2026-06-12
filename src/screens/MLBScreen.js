@@ -6,6 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import { supabase } from '../api/supabase';
 import MatchDetailScreen from './MatchDetailScreen';
+import { useLanguage } from '../i18n/LanguageContext';
 import MLBTeamScreen from './MLBTeamScreen';
 
 const H_MLB = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.baseball.api-sports.io' };
@@ -26,6 +27,7 @@ export default function MLBScreen({ onBack, user }) {
   const [standings, setStandings] = useState({ al:[], nl:[] });
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const C = '#E53935';
@@ -194,11 +196,11 @@ export default function MLBScreen({ onBack, user }) {
                     onPress={() => setSelectedMatch(buildMatch(g))}>
                     <View style={styles.matchCardHeader}>
                       {isLive ? <Text style={styles.liveLabel}>● LIVE Inn.{g.status.inning}</Text> : null}
-                      {isFinished ? <Text style={styles.finishedLabel}>Terminé</Text> : null}
+                      {isFinished ? <Text style={styles.finishedLabel}>{t('finished')}</Text> : null}
                       {!isLive && !isFinished ? <Text style={styles.dateLabel}>
                         {new Date(g.date).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}
                       </Text> : null}
-                      <Text style={styles.tapHint}>Voir détails →</Text>
+                      <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                     </View>
                     <View style={styles.matchTeams}>
                       <View style={styles.matchTeamLeft}>

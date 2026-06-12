@@ -158,7 +158,7 @@ function GolfAssistant({ match, language }) {
   );
 }
 
-function AISection({ content, loading, onRefresh }) {
+function AISection({ content, loading, onRefresh, t }) {
   if (loading) {
     return (
       <View style={styles.loadingBox}>
@@ -174,7 +174,7 @@ function AISection({ content, loading, onRefresh }) {
       </LinearGradient>
       <Text style={styles.aiText}>{content}</Text>
       <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
-        <Text style={styles.refreshText}>↻ Refresh</Text>
+        <Text style={styles.refreshText}>↻ {t ? t('refresh') : 'Refresh'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -201,7 +201,7 @@ function GolfLeaderboard({ match }) {
 }
 
 export default function MatchDetailScreen({ match, sport, color, onBack }) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   
   const [tab, setTab] = useState('forme');
   const [period, setPeriod] = useState(5);
@@ -387,8 +387,8 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
     try {
       const sportNames = { NHL:'NHL hockey', MLB:'MLB baseball', TENNIS:'tennis', F1:'Formule 1', GOLF:'PGA Tour golf', MMA:'MMA UFC' };
       const sportName = sportNames[sport] || sport;
-      const tabName = tab==='leaders' ? 'joueurs clés et statistiques récentes' :
-        tab==='compo' ? 'compositions probables' : 'statistiques récentes';
+      const tabName = tab==='leaders' ? 'key players and recent statistics' :
+        tab==='compo' ? 'probable lineups' : 'recent statistics';
       const context = buildRealContext();
       const prompt = 'DONNÉES RÉELLES :\n' + context +
         '\nEn te basant UNIQUEMENT sur ces données, fournis les ' + tabName +
@@ -831,7 +831,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
             ) : sport==='GOLF' ? (
               <GolfLeaderboard match={match} />
             ) : sport==='F1'||sport==='MMA'||sport==='TENNIS' ? (
-              <AISection content={aiContent||''} loading={loadingAI}
+              <AISection content={aiContent||''} loading={loadingAI} t={t}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />
             ) : (
               <>
@@ -847,7 +847,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
           <View>
             <PeriodSelector active={period} onSelect={setPeriod} color={C} />
             {needsAI ? (
-              <AISection content={aiContent} loading={loadingAI}
+              <AISection content={aiContent} loading={loadingAI} t={t}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />
             ) : loadingPlayers ? (
               <View style={styles.loadingBox}><ActivityIndicator color="#FF6B2B" size="large" /></View>
@@ -864,7 +864,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
         {tab==='compo' && (
           <View>
             {needsAI ? (
-              <AISection content={aiContent} loading={loadingAI}
+              <AISection content={aiContent} loading={loadingAI} t={t}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />
             ) : loadingPlayers ? (
               <View style={styles.loadingBox}><ActivityIndicator color="#FF6B2B" size="large" /></View>
@@ -885,7 +885,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
           <View>
             <PeriodSelector active={period} onSelect={setPeriod} color={C} />
             {needsAI ? (
-              <AISection content={aiContent} loading={loadingAI}
+              <AISection content={aiContent} loading={loadingAI} t={t}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />
             ) : loadingPlayers ? (
               <View style={styles.loadingBox}><ActivityIndicator color="#FF6B2B" size="large" /></View>
@@ -913,7 +913,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
                 </LinearGradient>
                 <Text style={styles.newsText}>{news}</Text>
                 <TouchableOpacity onPress={fetchNews} style={styles.refreshBtn}>
-                  <Text style={styles.refreshText}>↻ Refresh</Text>
+                  <Text style={styles.refreshText}>↻ {t ? t('refresh') : 'Refresh'}</Text>
                 </TouchableOpacity>
               </View>
             )}

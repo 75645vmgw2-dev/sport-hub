@@ -6,6 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import { supabase } from '../api/supabase';
 import MatchDetailScreen from './MatchDetailScreen';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const H_NBA   = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v2.nba.api-sports.io' };
 const H_BBALL = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.basketball.api-sports.io' };
@@ -32,6 +33,7 @@ export default function NBAScreen({ onBack, user }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingStandings, setLoadingStandings] = useState(false);
+  const { t } = useLanguage();
   const [selectedMatch, setSelectedMatch] = useState(null);
   const intervalRef = useRef(null);
   const C = '#1D428A';
@@ -386,7 +388,7 @@ export default function NBAScreen({ onBack, user }) {
                       {!isLive&&!isFinished?<Text style={styles.matchDateLabel}>
                         {new Date(g.date.start).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
                       </Text>:null}
-                      <Text style={styles.tapHint}>Voir détails →</Text>
+                      <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                     </View>
                     <View style={styles.matchTeams}>
                       <View style={styles.matchTeamLeft}>
@@ -437,7 +439,7 @@ export default function NBAScreen({ onBack, user }) {
                           📅 {new Date(g.date.start).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
                         </Text>
                       )}
-                      <Text style={styles.tapHint}>Voir détails →</Text>
+                      <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                     </View>
                     <View style={styles.matchTeams}>
                       <View style={styles.matchTeamLeft}>
@@ -490,7 +492,7 @@ export default function NBAScreen({ onBack, user }) {
                           {!isLive&&!isFinished?<Text style={styles.matchDateLabel}>
                             {new Date(g.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
                           </Text>:null}
-                          <Text style={styles.tapHint}>Voir détails →</Text>
+                          <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                         </View>
                         <View style={styles.matchTeams}>
                           <View style={styles.matchTeamLeft}>
