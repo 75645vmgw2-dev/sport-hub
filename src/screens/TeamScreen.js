@@ -9,7 +9,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { API_SPORTS_KEY, SEASONS, SEASON_LABELS } from '../api/config';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const ANTHROPIC_KEY = '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';
+const ANTHROPIC_KEY = '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';
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,
@@ -58,9 +58,7 @@ function PlayerModal({ player, color, language, onClose }) {
     de:'Deutsch', it:'italiano', ar:'العربية', ru:'русский'
   };
 
-  useEffect(() => {
-    fetchPlayerStats();
-  }, []);
+  useEffect(() => { fetchPlayerStats(); }, []);
 
   async function fetchPlayerStats() {
     setLoadingStats(true);
@@ -95,14 +93,10 @@ function PlayerModal({ player, color, language, onClose }) {
         'Reponds en ' + langName + ' en 3-4 phrases maximum.';
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST', headers: H_ANTHROPIC,
-        body: JSON.stringify({
-          model:'claude-sonnet-4-5', max_tokens:300,
-          messages:[{ role:'user', content:prompt }],
-        }),
+        body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:300, messages:[{ role:'user', content:prompt }] }),
       });
       const data = await response.json();
-      const text = (data.content||[]).map(function(c){return c.text||'';}).join('');
-      setKazmoText(text);
+      setKazmoText((data.content||[]).map(function(c){return c.text||'';}).join(''));
     } catch(e) {}
     finally { setLoadingKazmo(false); }
   }
@@ -117,13 +111,9 @@ function PlayerModal({ player, color, language, onClose }) {
     <Modal visible animationType="slide" transparent>
       <View style={pStyles.overlay}>
         <View style={pStyles.container}>
-
-          {/* Header joueur */}
           <View style={[pStyles.header, { borderBottomColor: color }]}>
             <View style={[pStyles.avatar, { backgroundColor: color + '33' }]}>
-              <Text style={pStyles.avatarText}>
-                {(player.firstname||'?')[0]}{(player.lastname||'?')[0]}
-              </Text>
+              <Text style={pStyles.avatarText}>{(player.firstname||'?')[0]}{(player.lastname||'?')[0]}</Text>
             </View>
             <View style={{ flex:1 }}>
               <Text style={pStyles.name}>{player.firstname} {player.lastname}</Text>
@@ -141,12 +131,8 @@ function PlayerModal({ player, color, language, onClose }) {
               <Text style={pStyles.closeBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
-
           <ScrollView contentContainerStyle={pStyles.scroll}>
-
-            {/* Stats */}
             <Text style={pStyles.sectionTitle}>STATS SAISON 2025-26</Text>
-
             {loadingStats ? (
               <ActivityIndicator color="#FF6B2B" style={{ marginVertical:16 }} />
             ) : stats ? (
@@ -168,17 +154,11 @@ function PlayerModal({ player, color, language, onClose }) {
                 })}
               </View>
             ) : (
-              <View style={pStyles.emptyBox}>
-                <Text style={pStyles.emptyText}>Stats non disponibles</Text>
-              </View>
+              <View style={pStyles.emptyBox}><Text style={pStyles.emptyText}>Stats non disponibles</Text></View>
             )}
-
-            {/* Kazmo analyse */}
             <Text style={[pStyles.sectionTitle, { marginTop:16 }]}>ANALYSE KAZMO</Text>
             {!kazmoText && !loadingKazmo ? (
-              <TouchableOpacity
-                onPress={fetchKazmo}
-                activeOpacity={0.85}
+              <TouchableOpacity onPress={fetchKazmo} activeOpacity={0.85}
                 style={[pStyles.kazmoBtn, { borderColor: color + '44', backgroundColor: color + '11' }]}>
                 <Text style={[pStyles.kazmoBtnText, { color }]}>🤖 Analyser ce joueur</Text>
               </TouchableOpacity>
@@ -192,7 +172,6 @@ function PlayerModal({ player, color, language, onClose }) {
                 <Text style={pStyles.kazmoText}>{kazmoText}</Text>
               </View>
             )}
-
           </ScrollView>
         </View>
       </View>
@@ -202,8 +181,7 @@ function PlayerModal({ player, color, language, onClose }) {
 
 const pStyles = StyleSheet.create({
   overlay: { flex:1, backgroundColor:'#000000bb', justifyContent:'flex-end' },
-  container: { backgroundColor:'#16162a', borderTopLeftRadius:24, borderTopRightRadius:24,
-               maxHeight:'80%', borderWidth:1, borderColor:'#ffffff14' },
+  container: { backgroundColor:'#16162a', borderTopLeftRadius:24, borderTopRightRadius:24, maxHeight:'80%', borderWidth:1, borderColor:'#ffffff14' },
   header: { flexDirection:'row', alignItems:'center', gap:12, padding:16, borderBottomWidth:2 },
   avatar: { width:56, height:56, borderRadius:28, alignItems:'center', justifyContent:'center' },
   avatarText: { color:'#fff', fontFamily:'BebasNeue', fontSize:20 },
@@ -213,22 +191,19 @@ const pStyles = StyleSheet.create({
   posBadgeText: { color:'#fff', fontFamily:'BebasNeue', fontSize:10 },
   country: { color:'#ffffff88', fontSize:10 },
   info: { color:'#ffffff55', fontSize:10 },
-  closeBtn: { width:32, height:32, borderRadius:16, backgroundColor:'#ffffff14',
-              alignItems:'center', justifyContent:'center' },
+  closeBtn: { width:32, height:32, borderRadius:16, backgroundColor:'#ffffff14', alignItems:'center', justifyContent:'center' },
   closeBtnText: { color:'#ffffff88', fontSize:14 },
   scroll: { padding:16, paddingBottom:40 },
   sectionTitle: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:11, letterSpacing:2, marginBottom:10 },
   statsGrid: { flexDirection:'row', flexWrap:'wrap', gap:8 },
-  statBox: { width:'30%', backgroundColor:'#0d0d1a', borderRadius:10, padding:12,
-             alignItems:'center', borderWidth:1, borderColor:'#ffffff14' },
+  statBox: { width:'30%', backgroundColor:'#0d0d1a', borderRadius:10, padding:12, alignItems:'center', borderWidth:1, borderColor:'#ffffff14' },
   statValue: { fontFamily:'BebasNeue', fontSize:22, letterSpacing:1 },
   statLabel: { color:'#ffffff55', fontFamily:'BebasNeue', fontSize:10, letterSpacing:1, marginTop:2 },
   emptyBox: { backgroundColor:'#0d0d1a', borderRadius:10, padding:16, alignItems:'center' },
   emptyText: { color:'#ffffff55', fontSize:11, marginTop:8 },
   kazmoBtn: { borderRadius:12, padding:14, alignItems:'center', borderWidth:1 },
   kazmoBtnText: { fontFamily:'BebasNeue', fontSize:13, letterSpacing:1 },
-  kazmoCard: { backgroundColor:'#0d0d1a', borderRadius:12, padding:14,
-               borderWidth:1, borderColor:'#FF6B2B22' },
+  kazmoCard: { backgroundColor:'#0d0d1a', borderRadius:12, padding:14, borderWidth:1, borderColor:'#FF6B2B22' },
   kazmoText: { color:'#ffffffcc', fontSize:13, lineHeight:20 },
 });
 
@@ -253,6 +228,11 @@ export default function TeamScreen({ favorite, onBack }) {
     f1:'#E10600', golf:'#2E7D32', mma:'#9C27B0',
   }[favorite.sport] || '#FF6B2B';
 
+  const sportIcon = {
+    basketball:'🏀', hockey:'🏒', baseball:'⚾', nfl:'🏈',
+    soccer:'⚽', f1:'🏎', golf:'⛳', mma:'🤼',
+  }[favorite.sport] || '🏆';
+
   const langNames = {
     fr:'français', en:'English', es:'español', pt:'português',
     de:'Deutsch', it:'italiano', ar:'العربية', ru:'русский'
@@ -264,6 +244,10 @@ export default function TeamScreen({ favorite, onBack }) {
     setLoading(true);
     try {
       if (favorite.sport === 'basketball') await fetchNBAData();
+      else if (favorite.sport === 'hockey') await fetchHockeyData();
+      else if (favorite.sport === 'baseball') await fetchBaseballData();
+      else if (favorite.sport === 'nfl') await fetchNFLData();
+      else if (favorite.sport === 'soccer') await fetchSoccerData();
     } catch(e) {}
     finally { setLoading(false); }
   }
@@ -276,17 +260,12 @@ export default function TeamScreen({ favorite, onBack }) {
       );
       const data = await res.json();
       const all = data.response || [];
-      const finished = all
-        .filter(function(g) { return String(g.status.short) === '3'; })
-        .sort(function(a,b) { return new Date(b.date.start) - new Date(a.date.start); });
-      const upcoming = all
-        .filter(function(g) { return String(g.status.short) === '1'; })
-        .sort(function(a,b) { return new Date(a.date.start) - new Date(b.date.start); })
-        .slice(0, 10);
-      setAllGames(finished);
-      setUpcomingGames(upcoming);
+      const finished = all.filter(function(g){ return String(g.status.short) === '3'; })
+        .sort(function(a,b){ return new Date(b.date.start) - new Date(a.date.start); });
+      const upcoming = all.filter(function(g){ return String(g.status.short) === '1'; })
+        .sort(function(a,b){ return new Date(a.date.start) - new Date(b.date.start); }).slice(0,10);
+      setAllGames(finished); setUpcomingGames(upcoming);
     } catch(e) {}
-
     try {
       const res = await fetch(
         'https://v2.nba.api-sports.io/players?team=' + favorite.team_id + '&season=2024',
@@ -294,6 +273,92 @@ export default function TeamScreen({ favorite, onBack }) {
       );
       const data = await res.json();
       setPlayers((data.response || []).slice(0, 12));
+    } catch(e) {}
+  }
+
+  async function fetchHockeyData() {
+    try {
+      const now = new Date();
+      const yesterday = new Date(now.getTime()-86400000).toISOString().slice(0,10);
+      const in30 = new Date(now.getTime()+30*86400000).toISOString().slice(0,10);
+      const season = SEASONS.NHL || 2025;
+      const res = await fetch(
+        'https://v1.hockey.api-sports.io/games?team=' + favorite.team_id + '&season=' + season,
+        { headers: { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.hockey.api-sports.io' } }
+      );
+      const data = await res.json();
+      const all = data.response || [];
+      const finished = all.filter(function(g){
+        return ['Finished','After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
+      }).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+      const upcoming = all.filter(function(g){
+        const d = g.date?.slice(0,10);
+        return g.status.short === 'NS' && d >= yesterday && d <= in30;
+      }).sort(function(a,b){ return new Date(a.date) - new Date(b.date); }).slice(0,10);
+      setAllGames(finished); setUpcomingGames(upcoming);
+    } catch(e) {}
+  }
+
+  async function fetchBaseballData() {
+    try {
+      const season = SEASONS.MLB || 2026;
+      const res = await fetch(
+        'https://v1.baseball.api-sports.io/games?team=' + favorite.team_id + '&season=' + season + '&league=1',
+        { headers: { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.baseball.api-sports.io' } }
+      );
+      const data = await res.json();
+      const all = data.response || [];
+      const finished = all.filter(function(g){
+        return g.status.long === 'Finished' || g.status.short === 'FT';
+      }).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+      const upcoming = all.filter(function(g){
+        return g.status.short === 'NS';
+      }).sort(function(a,b){ return new Date(a.date) - new Date(b.date); }).slice(0,10);
+      setAllGames(finished); setUpcomingGames(upcoming);
+    } catch(e) {}
+  }
+
+  async function fetchNFLData() {
+    try {
+      const season = SEASONS.NFL || 2025;
+      const res = await fetch(
+        'https://v1.american-football.api-sports.io/games?team=' + favorite.team_id + '&season=' + season + '&league=1',
+        { headers: { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.american-football.api-sports.io' } }
+      );
+      const data = await res.json();
+      const all = data.response || [];
+      const finished = all.filter(function(g){
+        return g.game?.status?.short === 'FT' || g.game?.status?.long === 'Finished';
+      }).sort(function(a,b){ return new Date(b.game?.date?.date) - new Date(a.game?.date?.date); });
+      const upcoming = all.filter(function(g){
+        return g.game?.status?.short === 'NS';
+      }).sort(function(a,b){ return new Date(a.game?.date?.date) - new Date(b.game?.date?.date); }).slice(0,10);
+      setAllGames(finished); setUpcomingGames(upcoming);
+    } catch(e) {}
+  }
+
+  async function fetchSoccerData() {
+    try {
+      const season = SEASONS.SOCCER || 2025;
+      const res = await fetch(
+        'https://v3.football.api-sports.io/fixtures?team=' + favorite.team_id + '&season=' + season + '&last=20',
+        { headers: { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' } }
+      );
+      const data = await res.json();
+      const all = data.response || [];
+      const finished = all.filter(function(f){
+        return ['FT','AET','PEN'].indexOf(f.fixture.status.short) >= 0;
+      }).sort(function(a,b){ return new Date(b.fixture.date) - new Date(a.fixture.date); });
+      setAllGames(finished);
+    } catch(e) {}
+    try {
+      const season = SEASONS.SOCCER || 2025;
+      const res = await fetch(
+        'https://v3.football.api-sports.io/fixtures?team=' + favorite.team_id + '&season=' + season + '&next=10',
+        { headers: { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' } }
+      );
+      const data = await res.json();
+      setUpcomingGames(data.response || []);
     } catch(e) {}
   }
 
@@ -341,13 +406,116 @@ export default function TeamScreen({ favorite, onBack }) {
     finally { setLoadingChat(false); }
   }
 
-  function isMyTeam(g) {
-    return String(g.teams.home.id) === String(favorite.team_id) ||
-           g.teams.home.name === favorite.team_name;
+  // Fonctions utilitaires pour récupérer les infos selon le sport
+  function getGameDate(g) {
+    if (favorite.sport === 'basketball') return (g.date?.start||'').slice(0,10);
+    if (favorite.sport === 'soccer') return (g.fixture?.date||'').slice(0,10);
+    if (favorite.sport === 'nfl') return (g.game?.date?.date||'').slice(0,10);
+    return (g.date||'').slice(0,10);
+  }
+
+  function getGameDateFull(g) {
+    const d = getGameDate(g);
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
+  }
+
+  function getGameTime(g) {
+    let dateStr = '';
+    if (favorite.sport === 'basketball') dateStr = g.date?.start||'';
+    else if (favorite.sport === 'soccer') dateStr = g.fixture?.date||'';
+    else if (favorite.sport === 'nfl') dateStr = g.game?.date?.date||'';
+    else dateStr = g.date||'';
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+  }
+
+  function isHome(g) {
+    if (favorite.sport === 'basketball') {
+      return String(g.teams?.home?.id) === String(favorite.team_id) || g.teams?.home?.name === favorite.team_name;
+    }
+    if (favorite.sport === 'soccer') {
+      return String(g.teams?.home?.id) === String(favorite.team_id);
+    }
+    if (favorite.sport === 'nfl') {
+      return String(g.teams?.home?.id) === String(favorite.team_id);
+    }
+    if (favorite.sport === 'hockey') {
+      return String(g.teams?.home?.id) === String(favorite.team_id);
+    }
+    if (favorite.sport === 'baseball') {
+      return String(g.teams?.home?.id) === String(favorite.team_id);
+    }
+    return true;
+  }
+
+  function getScores(g) {
+    const home = isHome(g);
+    if (favorite.sport === 'basketball') {
+      const my = home ? g.scores?.home?.points : g.scores?.visitors?.points;
+      const opp = home ? g.scores?.visitors?.points : g.scores?.home?.points;
+      return { my: my||0, opp: opp||0 };
+    }
+    if (favorite.sport === 'soccer') {
+      const my = home ? g.goals?.home : g.goals?.away;
+      const opp = home ? g.goals?.away : g.goals?.home;
+      return { my: my||0, opp: opp||0 };
+    }
+    if (favorite.sport === 'hockey') {
+      const my = home ? g.scores?.home : g.scores?.away;
+      const opp = home ? g.scores?.away : g.scores?.home;
+      return { my: my||0, opp: opp||0 };
+    }
+    if (favorite.sport === 'baseball') {
+      const my = home ? g.scores?.home?.total : g.scores?.away?.total;
+      const opp = home ? g.scores?.away?.total : g.scores?.home?.total;
+      return { my: my||0, opp: opp||0 };
+    }
+    if (favorite.sport === 'nfl') {
+      const my = home ? g.scores?.home?.total : g.scores?.away?.total;
+      const opp = home ? g.scores?.away?.total : g.scores?.home?.total;
+      return { my: my||0, opp: opp||0 };
+    }
+    return { my:0, opp:0 };
+  }
+
+  function getOppName(g) {
+    const home = isHome(g);
+    if (favorite.sport === 'basketball') {
+      return home ? g.teams?.visitors?.name : g.teams?.home?.name;
+    }
+    if (favorite.sport === 'soccer') {
+      return home ? g.teams?.away?.name : g.teams?.home?.name;
+    }
+    if (favorite.sport === 'hockey' || favorite.sport === 'baseball') {
+      return home ? g.teams?.away?.name : g.teams?.home?.name;
+    }
+    if (favorite.sport === 'nfl') {
+      return home ? g.teams?.away?.name : g.teams?.home?.name;
+    }
+    return '?';
+  }
+
+  function getOppLogo(g) {
+    const name = getOppName(g);
+    if (favorite.sport === 'basketball') return getNBALogo(name);
+    if (favorite.sport === 'soccer') {
+      const home = isHome(g);
+      return home ? g.teams?.away?.logo : g.teams?.home?.logo;
+    }
+    if (favorite.sport === 'hockey') {
+      const home = isHome(g);
+      return home ? g.teams?.away?.logo : g.teams?.home?.logo;
+    }
+    if (favorite.sport === 'baseball') {
+      const home = isHome(g);
+      return home ? g.teams?.away?.logo : g.teams?.home?.logo;
+    }
+    return null;
   }
 
   const recentGames = allGames.slice(0, nbMatchs);
-  const myLogo = getNBALogo(favorite.team_name);
+  const myLogo = favorite.logo_url || (favorite.sport === 'basketball' ? getNBALogo(favorite.team_name) : null);
 
   const TABS = [
     { id:'recent', label:'📊 Forme' },
@@ -358,7 +526,6 @@ export default function TeamScreen({ favorite, onBack }) {
 
   return (
     <SafeAreaView style={styles.container}>
-
       <View style={[styles.header, { borderBottomColor: color }]}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
           <Text style={styles.backBtnText}>←</Text>
@@ -368,7 +535,7 @@ export default function TeamScreen({ favorite, onBack }) {
             <Image source={{ uri: myLogo }} style={styles.headerLogo} onError={function(){}} />
           ) : (
             <View style={[styles.headerLogoPlaceholder, { backgroundColor: color + '33' }]}>
-              <Text style={styles.headerLogoText}>{favorite.team_name.slice(0,2).toUpperCase()}</Text>
+              <Text style={styles.headerLogoText}>{sportIcon}</Text>
             </View>
           )}
           <View>
@@ -420,31 +587,30 @@ export default function TeamScreen({ favorite, onBack }) {
               </View>
               {recentGames.length === 0 ? (
                 <View style={styles.emptyBox}><Text style={styles.emptyText}>Pas de matchs récents</Text></View>
-              ) : recentGames.map(function(g) {
-                const home = isMyTeam(g);
-                const myScore = home ? g.scores.home.points : g.scores.visitors.points;
-                const oppScore = home ? g.scores.visitors.points : g.scores.home.points;
-                const oppName = home ? g.teams.visitors.name : g.teams.home.name;
-                const oppLogoUrl = getNBALogo(oppName);
-                const win = (myScore||0) > (oppScore||0);
+              ) : recentGames.map(function(g, i) {
+                const scores = getScores(g);
+                const oppName = getOppName(g);
+                const oppLogo = getOppLogo(g);
+                const home = isHome(g);
+                const win = scores.my > scores.opp;
                 return (
-                  <View key={g.id} style={[styles.gameCard, { borderLeftColor: win ? '#4CAF50' : '#E53935', borderLeftWidth:3 }]}>
+                  <View key={i} style={[styles.gameCard, { borderLeftColor: win ? '#4CAF50' : '#E53935', borderLeftWidth:3 }]}>
                     <View style={styles.gameCardRow}>
-                      <Text style={styles.gameCardDate}>{(g.date.start||'').slice(0,10)}</Text>
-                      <Text style={styles.gameCardLocation}>{home ? '🏠 Domicile' : '✈️ Exterieur'}</Text>
+                      <Text style={styles.gameCardDate}>{getGameDate(g)}</Text>
+                      <Text style={styles.gameCardLocation}>{home ? '🏠 Domicile' : '✈️ Extérieur'}</Text>
                       <View style={[styles.winLossBadge, { backgroundColor: win ? '#4CAF5022' : '#E5393522' }]}>
                         <Text style={[styles.winLossText, { color: win ? '#4CAF50' : '#E53935' }]}>{win ? '✓ V' : '✗ D'}</Text>
                       </View>
                     </View>
                     <View style={styles.gameCardTeams}>
-                      {oppLogoUrl ? (
-                        <Image source={{ uri: oppLogoUrl }} style={styles.gameCardLogo} onError={function(){}} />
+                      {oppLogo ? (
+                        <Image source={{ uri: oppLogo }} style={styles.gameCardLogo} onError={function(){}} />
                       ) : (
-                        <View style={styles.gameCardLogoPlaceholder}><Text style={{ fontSize:16 }}>🏀</Text></View>
+                        <View style={styles.gameCardLogoPlaceholder}><Text style={{ fontSize:16 }}>{sportIcon}</Text></View>
                       )}
                       <Text style={styles.gameCardOpp} numberOfLines={1}>vs {oppName}</Text>
                       <Text style={[styles.gameCardScore, { color: win ? '#4CAF50' : '#E53935' }]}>
-                        {myScore||0} - {oppScore||0}
+                        {scores.my} - {scores.opp}
                       </Text>
                     </View>
                   </View>
@@ -459,27 +625,22 @@ export default function TeamScreen({ favorite, onBack }) {
               <Text style={styles.sectionTitle}>PROCHAINS MATCHS</Text>
               {upcomingGames.length === 0 ? (
                 <View style={styles.emptyBox}><Text style={styles.emptyText}>Pas de matchs à venir</Text></View>
-              ) : upcomingGames.map(function(g) {
-                const home = isMyTeam(g);
-                const oppName = home ? g.teams.visitors.name : g.teams.home.name;
-                const oppLogoUrl = getNBALogo(oppName);
-                const matchDate = new Date(g.date.start);
+              ) : upcomingGames.map(function(g, i) {
+                const oppName = getOppName(g);
+                const oppLogo = getOppLogo(g);
+                const home = isHome(g);
                 return (
-                  <View key={g.id} style={styles.upcomingCard}>
+                  <View key={i} style={styles.upcomingCard}>
                     <View style={styles.upcomingCardRow}>
-                      <Text style={styles.upcomingDate}>
-                        {matchDate.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' })}
-                      </Text>
-                      <Text style={styles.gameCardLocation}>{home ? '🏠 Domicile' : '✈️ Exterieur'}</Text>
-                      <Text style={[styles.upcomingTime, { color }]}>
-                        {matchDate.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })}
-                      </Text>
+                      <Text style={styles.upcomingDate}>{getGameDateFull(g)}</Text>
+                      <Text style={styles.gameCardLocation}>{home ? '🏠 Domicile' : '✈️ Extérieur'}</Text>
+                      <Text style={[styles.upcomingTime, { color }]}>{getGameTime(g)}</Text>
                     </View>
                     <View style={styles.gameCardTeams}>
-                      {oppLogoUrl ? (
-                        <Image source={{ uri: oppLogoUrl }} style={styles.gameCardLogo} onError={function(){}} />
+                      {oppLogo ? (
+                        <Image source={{ uri: oppLogo }} style={styles.gameCardLogo} onError={function(){}} />
                       ) : (
-                        <View style={styles.gameCardLogoPlaceholder}><Text style={{ fontSize:16 }}>🏀</Text></View>
+                        <View style={styles.gameCardLogoPlaceholder}><Text style={{ fontSize:16 }}>{sportIcon}</Text></View>
                       )}
                       <Text style={styles.gameCardOpp} numberOfLines={1}>vs {oppName}</Text>
                       <Text style={[styles.vsText, { color }]}>À VENIR</Text>
@@ -493,24 +654,25 @@ export default function TeamScreen({ favorite, onBack }) {
           {/* JOUEURS */}
           {tab === 'players' && (
             <View>
-              <Text style={styles.sectionTitle}>ROSTER — Appuyer pour détails</Text>
+              <Text style={styles.sectionTitle}>ROSTER</Text>
               {players.length === 0 ? (
-                <View style={styles.emptyBox}><Text style={styles.emptyText}>Roster non disponible</Text></View>
+                <View style={styles.emptyBox}>
+                  <Text style={styles.emptyText}>
+                    {favorite.sport === 'basketball' ? 'Roster non disponible' : 'Roster disponible pour NBA uniquement'}
+                  </Text>
+                </View>
               ) : (
                 <View style={styles.playersGrid}>
                   {players.map(function(p, i) {
                     return (
-                      <TouchableOpacity key={i} style={styles.playerCard}
-                        activeOpacity={0.8}
+                      <TouchableOpacity key={i} style={styles.playerCard} activeOpacity={0.8}
                         onPress={() => setSelectedPlayer(p)}>
                         <View style={[styles.playerAvatar, { backgroundColor: color + '33' }]}>
                           <Text style={styles.playerAvatarText}>
                             {(p.firstname||'?')[0]}{(p.lastname||'?')[0]}
                           </Text>
                         </View>
-                        <Text style={styles.playerName} numberOfLines={1}>
-                          {p.firstname} {p.lastname}
-                        </Text>
+                        <Text style={styles.playerName} numberOfLines={1}>{p.firstname} {p.lastname}</Text>
                         {p.leagues?.standard?.pos ? (
                           <Text style={[styles.playerPos, { color }]}>{p.leagues.standard.pos}</Text>
                         ) : null}
@@ -544,7 +706,6 @@ export default function TeamScreen({ favorite, onBack }) {
                   <Text style={styles.analysisText}>{kazmoAnalysis}</Text>
                 </View>
               ) : null}
-
               <Text style={[styles.sectionTitle, { marginTop:20 }]}>POSER UNE QUESTION</Text>
               {chatHistory.length > 0 && (
                 <View style={styles.chatHistory}>
@@ -577,12 +738,10 @@ export default function TeamScreen({ favorite, onBack }) {
               )}
               <View style={styles.chatInputRow}>
                 <TextInput
-                  value={chatInput}
-                  onChangeText={setChatInput}
+                  value={chatInput} onChangeText={setChatInput}
                   style={styles.chatInput}
                   placeholder={'Question sur ' + favorite.team_name + '...'}
-                  placeholderTextColor="#ffffff44"
-                  multiline maxLength={300}
+                  placeholderTextColor="#ffffff44" multiline maxLength={300}
                 />
                 <TouchableOpacity onPress={sendChat} disabled={loadingChat || !chatInput.trim()}
                   activeOpacity={0.85} style={styles.chatSendBtn}>
@@ -599,14 +758,8 @@ export default function TeamScreen({ favorite, onBack }) {
         </ScrollView>
       )}
 
-      {/* MODAL JOUEUR */}
       {selectedPlayer && (
-        <PlayerModal
-          player={selectedPlayer}
-          color={color}
-          language={language}
-          onClose={() => setSelectedPlayer(null)}
-        />
+        <PlayerModal player={selectedPlayer} color={color} language={language} onClose={() => setSelectedPlayer(null)} />
       )}
 
     </SafeAreaView>
@@ -621,7 +774,7 @@ const styles = StyleSheet.create({
   headerCenter: { flexDirection:'row', alignItems:'center', gap:12, flex:1 },
   headerLogo: { width:48, height:48, resizeMode:'contain' },
   headerLogoPlaceholder: { width:48, height:48, borderRadius:24, alignItems:'center', justifyContent:'center' },
-  headerLogoText: { color:'#fff', fontFamily:'BebasNeue', fontSize:16 },
+  headerLogoText: { color:'#fff', fontFamily:'BebasNeue', fontSize:22 },
   headerTeamName: { color:'#fff', fontFamily:'BebasNeue', fontSize:18, letterSpacing:1 },
   headerLeague: { color:'#ffffff66', fontSize:10, marginTop:2 },
   tabScrollView: { maxHeight:42, marginHorizontal:16, marginTop:8, marginBottom:4 },
@@ -646,7 +799,7 @@ const styles = StyleSheet.create({
   winLossText: { fontSize:9, fontWeight:'700', fontFamily:'BebasNeue' },
   gameCardTeams: { flexDirection:'row', alignItems:'center', gap:8 },
   gameCardLogo: { width:28, height:28, resizeMode:'contain' },
-  gameCardLogoPlaceholder: { width:28, height:28, borderRadius:14, backgroundColor:'#1D428A33', alignItems:'center', justifyContent:'center' },
+  gameCardLogoPlaceholder: { width:28, height:28, borderRadius:14, backgroundColor:'#ffffff11', alignItems:'center', justifyContent:'center' },
   gameCardOpp: { color:'#fff', fontSize:12, fontWeight:'600', flex:1 },
   gameCardScore: { fontFamily:'BebasNeue', fontSize:18 },
   upcomingCard: { backgroundColor:'#16162a', borderRadius:10, padding:12, marginBottom:8, borderWidth:1, borderColor:'#ffffff14' },

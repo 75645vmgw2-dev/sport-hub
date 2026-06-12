@@ -19,12 +19,12 @@ function GradientText({ text, fontSize, letterSpacing }) {
 
 const SPORT_COLORS = {
   basketball:'#1D428A', hockey:'#00B8D9', baseball:'#E53935', nfl:'#1A73E8',
-  soccer:'#4CAF50', tennis:'#c85a19', f1:'#E10600', golf:'#2E7D32', mma:'#9C27B0',
+  soccer:'#4CAF50', f1:'#E10600', golf:'#2E7D32', mma:'#9C27B0',
 };
 
 const SPORT_ICONS = {
   basketball:'🏀', hockey:'🏒', baseball:'⚾', nfl:'🏈',
-  soccer:'⚽', tennis:'🎾', f1:'🏎', golf:'⛳', mma:'🤼',
+  soccer:'⚽', f1:'🏎', golf:'⛳', mma:'🤼',
 };
 
 export default function FavoritesScreen({ user }) {
@@ -117,7 +117,7 @@ export default function FavoritesScreen({ user }) {
                         <View style={styles.teamInfo}>
                           <Text style={styles.teamName}>{fav.team_name}</Text>
                           <Text style={styles.teamLeague}>{fav.league}</Text>
-                          <Text style={styles.teamHint}>Appuyer pour voir la fiche →</Text>
+                          <Text style={styles.teamHint}>{t('favSeeSheet')} →</Text>
                         </View>
                         <TouchableOpacity
                           onPress={() => removeFavorite(fav.id)}
@@ -153,8 +153,7 @@ const styles = StyleSheet.create({
   sportSection: { marginBottom:20 },
   sportHeader: { borderLeftWidth:3, paddingLeft:10, marginBottom:10 },
   sportHeaderText: { color:'#fff', fontFamily:'BebasNeue', fontSize:14, letterSpacing:2 },
-  teamCard: { backgroundColor:'#16162a', borderRadius:12, padding:14, marginBottom:8,
-              borderWidth:1, borderColor:'#ffffff14' },
+  teamCard: { backgroundColor:'#16162a', borderRadius:12, padding:14, marginBottom:8, borderWidth:1, borderColor:'#ffffff14' },
   teamCardContent: { flexDirection:'row', alignItems:'center', gap:10 },
   teamLogo: { width:48, height:48, resizeMode:'contain' },
   teamLogoPlaceholder: { width:48, height:48, borderRadius:24, alignItems:'center', justifyContent:'center' },

@@ -6,6 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { API_SPORTS_KEY } from '../api/config';
 import { supabase } from '../api/supabase';
 import MatchDetailScreen from './MatchDetailScreen';
+import NHLTeamScreen from './NHLTeamScreen';
 
 const H_NHL = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.hockey.api-sports.io' };
 
@@ -27,6 +28,7 @@ export default function NHLScreen({ onBack, user }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const C = '#00B8D9';
 
   const TABS = [
@@ -44,11 +46,15 @@ export default function NHLScreen({ onBack, user }) {
           { headers: H_NHL }
         );
         const standData = await standRes.json();
-        const east = (standData.response || []).filter(function(t) {
-          return t.group && t.group.name && t.group.name.toLowerCase().includes('east');
-        });
-        const west = (standData.response || []).filter(function(t) {
-          return t.group && t.group.name && t.group.name.toLowerCase().includes('west');
+        let east = [];
+        let west = [];
+        (standData.response || []).forEach(function(group) {
+          if (!Array.isArray(group)) return;
+          group.forEach(function(t) {
+            const gname = (t.group && t.group.name || '').toLowerCase();
+            if (gname.includes('east')) east.push(t);
+            else if (gname.includes('west')) west.push(t);
+          });
         });
         setStandings({ east, west });
 
@@ -120,6 +126,10 @@ export default function NHLScreen({ onBack, user }) {
   const vgkWins = finalesGames.filter(function(g) {
     return ['Finished','After Over Time','After Penalties'].indexOf(g.status.long) >= 0;
   }).length - carWins;
+
+  if (selectedTeam) {
+    return <NHLTeamScreen team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
+  }
 
   if (selectedMatch) {
     return (

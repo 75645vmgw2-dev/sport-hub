@@ -9,7 +9,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { supabase } from '../api/supabase';
 import { useLanguage } from '../i18n/LanguageContext';
 
-const ANTHROPIC_KEY = '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';
+const ANTHROPIC_KEY = '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';
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,
@@ -161,22 +161,26 @@ export default function FAQScreen({ user, onBack }) {
         reponse = existing.reponse_officielle;
         await supabase.from('faq').update({ nb_fois: existing.nb_fois + 1 }).eq('id', existing.id);
       } else {
-        const prompt = 'Tu es Kazmo, assistant IA d\'une application sportive premium.' +
+               const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+        const prompt = 'Tu es Kazmo, assistant IA d\'une application sportive premium. Nous sommes le '+today+'.' +
           '\nL\'application KAZMO permet de suivre tous les sports en direct (NBA, NHL, MLB, NFL, Football, Tennis, F1, Golf, MMA),' +
           '\nd\'obtenir des analyses et pronostics IA, de suivre ses equipes favorites, et est disponible en 8 langues (FR/EN/ES/PT/DE/IT/AR/RU).' +
           '\n\nUn utilisateur pose cette question: ' + questionText +
           '\n\nReponds de maniere claire, utile et concise en ' + langName + '.' +
           '\nSi la question ne concerne pas KAZMO ou le sport, redirige poliment vers les sujets de l\'app.';
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+
+         const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: H_ANTHROPIC,
           body: JSON.stringify({
             model: 'claude-sonnet-4-5',
             max_tokens: 500,
             messages: [{ role:'user', content: prompt }],
+            tools: [{ type:'web_search_20250305', name:'web_search' }],
           }),
         });
+
         const data = await response.json();
         reponse = (data.content || []).map(function(c) { return c.text || ''; }).join('');
 

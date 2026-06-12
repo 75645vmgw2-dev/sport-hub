@@ -3,9 +3,10 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
-import { API_SPORTS_KEY } from '../api/config';
+import { API_SPORTS_KEY, SEASONS, SEASON_LABELS } from '../api/config';
 import { supabase } from '../api/supabase';
 import MatchDetailScreen from './MatchDetailScreen';
+import SoccerTeamScreen from './SoccerTeamScreen';
 
 const H_FOOT = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' };
 
@@ -19,19 +20,70 @@ function GradientText({ text, fontSize, letterSpacing }) {
   );
 }
 
-const LEAGUES = [
-  { id:'wc', name:'🌍 Coupe du Monde 2026', leagueId:1, season:2026, color:'#006341' },
-  { id:'ucl', name:'⭐ Champions League', leagueId:2, season:2025, color:'#1a1aff' },
-  { id:'pl', name:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League', leagueId:39, season:2025, color:'#3d195b' },
-  { id:'ligue1', name:'🇫🇷 Ligue 1', leagueId:61, season:2025, color:'#003b8a' },
-  { id:'laliga', name:'🇪🇸 La Liga', leagueId:140, season:2025, color:'#ee1f21' },
-  { id:'bundesliga', name:'🇩🇪 Bundesliga', leagueId:78, season:2025, color:'#d4021d' },
-  { id:'seriea', name:'🇮🇹 Serie A', leagueId:135, season:2025, color:'#1a56db' },
-  { id:'mls', name:'🇺🇸 MLS', leagueId:253, season:2025, color:'#002040' },
+const FS = SEASONS.FOOTBALL;
+
+const COUNTRIES = [
+  {
+    id: 'europe', name: 'Competitions Europeennes', flag: '⭐', color: '#1a1aff',
+    leagues: [
+      { id:'ucl', name:'Champions League', leagueId:2, season:FS, color:'#1a1aff' },
+      { id:'uel', name:'Europa League', leagueId:3, season:FS, color:'#ff6600' },
+      { id:'uecl', name:'Conference League', leagueId:848, season:FS, color:'#00cc44' },
+    ]
+  },
+  {
+    id: 'england', name: 'Angleterre', flag: '🇬🇧', color: '#cc0000',
+    leagues: [
+      { id:'pl', name:'Premier League', leagueId:39, season:FS, color:'#3d195b' },
+      { id:'championship', name:'Championship', leagueId:40, season:FS, color:'#6a0dad' },
+      { id:'facup', name:'FA Cup', leagueId:45, season:FS, color:'#ff0000' },
+    ]
+  },
+  {
+    id: 'france', name: 'France', flag: '🇫🇷', color: '#003b8a',
+    leagues: [
+      { id:'ligue1', name:'Ligue 1', leagueId:61, season:FS, color:'#003b8a' },
+      { id:'ligue2', name:'Ligue 2', leagueId:62, season:FS, color:'#0055a4' },
+      { id:'coupefrance', name:'Coupe de France', leagueId:66, season:FS, color:'#002395' },
+    ]
+  },
+  {
+    id: 'spain', name: 'Espagne', flag: '🇪🇸', color: '#ee1f21',
+    leagues: [
+      { id:'laliga', name:'La Liga', leagueId:140, season:FS, color:'#ee1f21' },
+      { id:'segundadiv', name:'Segunda Division', leagueId:141, season:FS, color:'#c60b1e' },
+      { id:'copadelrey', name:'Copa del Rey', leagueId:143, season:FS, color:'#aa151b' },
+    ]
+  },
+  {
+    id: 'germany', name: 'Allemagne', flag: '🇩🇪', color: '#d4021d',
+    leagues: [
+      { id:'bundesliga', name:'Bundesliga', leagueId:78, season:FS, color:'#d4021d' },
+      { id:'bundesliga2', name:'2. Bundesliga', leagueId:79, season:FS, color:'#333333' },
+      { id:'dfbpokal', name:'DFB Pokal', leagueId:81, season:FS, color:'#333333' },
+    ]
+  },
+  {
+    id: 'italy', name: 'Italie', flag: '🇮🇹', color: '#1a56db',
+    leagues: [
+      { id:'seriea', name:'Serie A', leagueId:135, season:FS, color:'#1a56db' },
+      { id:'serieb', name:'Serie B', leagueId:136, season:FS, color:'#009246' },
+    ]
+  },
+  {
+    id: 'usa', name: 'USA', flag: '🇺🇸', color: '#002040',
+    leagues: [
+      { id:'mls', name:'MLS', leagueId:253, season:FS, color:'#002040' },
+    ]
+  },
 ];
 
+const WC_LEAGUE = { id:'wc', name:'Coupe du Monde 2026', leagueId:1, season:2026, color:'#006341' };
+
 export default function SoccerScreen({ onBack, user }) {
+  const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedLeague, setSelectedLeague] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [tab, setTab] = useState('matchs');
   const [fixtures, setFixtures] = useState([]);
   const [standings, setStandings] = useState([]);
@@ -59,7 +111,7 @@ export default function SoccerScreen({ onBack, user }) {
     setLoading(true);
     setTab('matchs');
     setSelectedMatch(null);
-
+    setSelectedTeam(null);
     if (league.id === 'wc') {
       await loadWorldCup();
     } else {
@@ -72,18 +124,16 @@ export default function SoccerScreen({ onBack, user }) {
     try {
       const today = new Date().toISOString().slice(0,10);
       const to = new Date(Date.now() + 7*86400000).toISOString().slice(0,10);
-
       const [fixRes, standRes] = await Promise.all([
-        fetch('https://v3.football.api-sports.io/fixtures?league=1&season=2026&from=' + today + '&to=' + to, { headers: H_FOOT }),
-        fetch('https://v3.football.api-sports.io/standings?league=1&season=2026', { headers: H_FOOT }),
+        fetch('https://v3.football.api-sports.io/fixtures?league=1&season=2026&from='+today+'&to='+to, { headers:H_FOOT }),
+        fetch('https://v3.football.api-sports.io/standings?league=1&season=2026', { headers:H_FOOT }),
       ]);
       const [fixData, standData] = await Promise.all([fixRes.json(), standRes.json()]);
       setWcFixtures(fixData.response || []);
-
       const allGroups = standData.response?.[0]?.league?.standings || [];
       setWcGroups(allGroups);
       if (allGroups.length > 0) setSelectedGroup(0);
-    } catch(e) { console.error(e); }
+    } catch(e) {}
   }
 
   async function loadLeague(league) {
@@ -91,13 +141,13 @@ export default function SoccerScreen({ onBack, user }) {
       const today = new Date().toISOString().slice(0,10);
       const to = new Date(Date.now() + 7*86400000).toISOString().slice(0,10);
       const [fixRes, standRes] = await Promise.all([
-        fetch('https://v3.football.api-sports.io/fixtures?league=' + league.leagueId + '&season=' + league.season + '&from=' + today + '&to=' + to, { headers: H_FOOT }),
-        fetch('https://v3.football.api-sports.io/standings?league=' + league.leagueId + '&season=' + league.season, { headers: H_FOOT }),
+        fetch('https://v3.football.api-sports.io/fixtures?league='+league.leagueId+'&season='+league.season+'&from='+today+'&to='+to, { headers:H_FOOT }),
+        fetch('https://v3.football.api-sports.io/standings?league='+league.leagueId+'&season='+league.season, { headers:H_FOOT }),
       ]);
       const [fixData, standData] = await Promise.all([fixRes.json(), standRes.json()]);
       setFixtures(fixData.response || []);
       setStandings(standData.response?.[0]?.league?.standings?.[0] || []);
-    } catch(e) { console.error(e); }
+    } catch(e) {}
   }
 
   async function toggleFavorite(team) {
@@ -109,7 +159,8 @@ export default function SoccerScreen({ onBack, user }) {
     } else {
       const { data } = await supabase.from('favorites').insert({
         user_id: user.id, sport: 'soccer', team_name: team.name,
-        league: selectedLeague ? selectedLeague.name : 'Football', logo_url: team.logo || null,
+        league: selectedLeague ? selectedLeague.name : 'Football',
+        logo_url: team.logo || null, team_id: team.id || null,
       }).select();
       if (data) setFavorites([...favorites, data[0]]);
     }
@@ -131,15 +182,14 @@ export default function SoccerScreen({ onBack, user }) {
     };
   }
 
+  if (selectedTeam) {
+    return <SoccerTeamScreen team={selectedTeam} league={selectedLeague} onBack={() => setSelectedTeam(null)} />;
+  }
+
   if (selectedMatch) {
     return (
       <View style={{ flex:1 }}>
-        <MatchDetailScreen
-          match={selectedMatch}
-          sport="SOCCER"
-          color={selectedLeague ? selectedLeague.color : C}
-          onBack={() => setSelectedMatch(null)}
-        />
+        <MatchDetailScreen match={selectedMatch} sport="SOCCER" color={selectedLeague ? selectedLeague.color : C} onBack={() => setSelectedMatch(null)} />
         <TouchableOpacity onPress={() => setSelectedMatch(null)} style={styles.backToScreen}>
           <Text style={styles.backToScreenText}>← Retour Football</Text>
         </TouchableOpacity>
@@ -151,14 +201,12 @@ export default function SoccerScreen({ onBack, user }) {
     const isLive = ['1H','2H','HT','ET','P'].indexOf(f.fixture.status.short) >= 0;
     const isFinished = ['FT','AET','PEN'].indexOf(f.fixture.status.short) >= 0;
     return (
-      <TouchableOpacity
-        style={[styles.matchCard, isLive && { borderColor: color, borderWidth:1 }]}
-        activeOpacity={0.8}
-        onPress={() => setSelectedMatch(buildMatch(f))}>
+      <TouchableOpacity style={[styles.matchCard, isLive && { borderColor:color, borderWidth:1 }]}
+        activeOpacity={0.8} onPress={() => setSelectedMatch(buildMatch(f))}>
         <View style={styles.matchCardHeader}>
           {f.league?.round ? <Text style={styles.roundLabel}>{f.league.round}</Text> : null}
           {isLive ? <Text style={styles.liveLabel}>● LIVE {f.fixture.status.elapsed}'</Text> : null}
-          {isFinished ? <Text style={styles.finishedLabel}>Terminé</Text> : null}
+          {isFinished ? <Text style={styles.finishedLabel}>Termine</Text> : null}
           {!isLive && !isFinished ? (
             <Text style={styles.dateLabel}>
               {new Date(f.fixture.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})}
@@ -166,29 +214,27 @@ export default function SoccerScreen({ onBack, user }) {
               {new Date(f.fixture.date).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}
             </Text>
           ) : null}
-          <Text style={styles.tapHint}>Voir détails →</Text>
+          <Text style={styles.tapHint}>Voir details →</Text>
         </View>
         <View style={styles.matchTeams}>
           <View style={styles.matchTeamLeft}>
-            {f.teams.home.logo ? <Image source={{ uri: f.teams.home.logo }} style={styles.matchLogo} onError={function(){}} /> : null}
+            {f.teams.home.logo ? <Image source={{ uri:f.teams.home.logo }} style={styles.matchLogo} onError={function(){}} /> : null}
             <Text style={styles.matchTeamName} numberOfLines={1}>{f.teams.home.name}</Text>
           </View>
           <Text style={[styles.matchScore, isLive && { color:'#ff1744' }]}>
-            {isFinished || isLive ? String(f.goals.home||0) + ' - ' + String(f.goals.away||0) : 'VS'}
+            {isFinished || isLive ? String(f.goals.home||0)+' - '+String(f.goals.away||0) : 'VS'}
           </Text>
           <View style={styles.matchTeamRight}>
             <Text style={styles.matchTeamName} numberOfLines={1}>{f.teams.away.name}</Text>
-            {f.teams.away.logo ? <Image source={{ uri: f.teams.away.logo }} style={styles.matchLogo} onError={function(){}} /> : null}
+            {f.teams.away.logo ? <Image source={{ uri:f.teams.away.logo }} style={styles.matchLogo} onError={function(){}} /> : null}
           </View>
         </View>
-        {f.fixture.venue?.name ? (
-          <Text style={styles.venueText}>📍 {f.fixture.venue.name}, {f.fixture.venue.city}</Text>
-        ) : null}
+        {f.fixture.venue?.name ? <Text style={styles.venueText}>📍 {f.fixture.venue.name}, {f.fixture.venue.city}</Text> : null}
       </TouchableOpacity>
     );
   }
 
-  function GroupTable({ group, groupIndex }) {
+  function GroupTable({ group }) {
     const groupName = group[0]?.group || 'Groupe';
     const color = selectedLeague?.color || '#006341';
     return (
@@ -204,17 +250,16 @@ export default function SoccerScreen({ onBack, user }) {
           <Text style={[styles.tableHeaderText, { width:32 }]}>★</Text>
         </View>
         {group.map(function(t, i) {
-          const qualified = t.description && t.description.toLowerCase().includes('playoff');
           return (
-            <View key={i} style={[styles.tableRow, {
-              backgroundColor: i % 2 === 0 ? '#16162a' : '#0d0d1a',
-              borderLeftColor: i < 2 ? color : '#ffffff14',
-              borderLeftWidth: 3,
-            }]}>
+            <TouchableOpacity key={i}
+              style={[styles.tableRow, {
+                backgroundColor: i%2===0 ? '#16162a' : '#0d0d1a',
+                borderLeftColor: i<2 ? color : '#ffffff14', borderLeftWidth:3,
+              }]}
+              onPress={() => setSelectedTeam(t.team)}>
               <View style={[styles.tableTeam, { flex:1 }]}>
-                {t.team.logo ? <Image source={{ uri: t.team.logo }} style={styles.teamLogoSmall} onError={function(){}} /> : null}
+                {t.team.logo ? <Image source={{ uri:t.team.logo }} style={styles.teamLogoSmall} onError={function(){}} /> : null}
                 <Text style={styles.tableTeamName} numberOfLines={1}>{t.team.name}</Text>
-                {qualified ? <View style={styles.qualifiedBadge}><Text style={styles.qualifiedText}>Q</Text></View> : null}
               </View>
               <Text style={[styles.tableCell, { width:24, color:'#ffffff88' }]}>{String(t.all.played)}</Text>
               <Text style={[styles.tableCell, { width:24 }]}>{String(t.all.win)}</Text>
@@ -224,119 +269,85 @@ export default function SoccerScreen({ onBack, user }) {
               <TouchableOpacity onPress={() => toggleFavorite(t.team)} style={{ width:32, alignItems:'center' }}>
                 <Text style={{ fontSize:14, color: isFav(t.team.name) ? '#FFD700' : '#ffffff33' }}>★</Text>
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
     );
   }
 
+  // === PAGE LIGUE ===
   if (selectedLeague) {
     const isWC = selectedLeague.id === 'wc';
     const color = selectedLeague.color;
-
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setSelectedLeague(null)}>
-            <Text style={styles.backBtnText}>← Ligues</Text>
+          <TouchableOpacity onPress={() => { setSelectedLeague(null); }}>
+            <Text style={styles.backBtnText}>← {selectedCountry ? selectedCountry.name : 'Football'}</Text>
           </TouchableOpacity>
           <Text style={styles.leagueTitle}>{selectedLeague.name}</Text>
         </View>
 
         {isWC ? (
-          // === COUPE DU MONDE ===
           <View style={{ flex:1 }}>
             <View style={styles.tabBar}>
-              {[
-                { id:'matchs', label:'📅 Matchs' },
-                { id:'groupes', label:'🏆 Groupes' },
-              ].map(function(t) {
+              {[{id:'matchs',label:'Matchs'},{id:'groupes',label:'Groupes'}].map(function(t) {
                 return (
-                  <TouchableOpacity key={t.id}
-                    style={[styles.tabBtn, wcTab === t.id && { backgroundColor: color }]}
-                    onPress={() => setWcTab(t.id)}>
-                    <Text style={[styles.tabBtnText, wcTab === t.id && { color:'#fff' }]}>{t.label}</Text>
+                  <TouchableOpacity key={t.id} style={[styles.tabBtn, wcTab===t.id&&{backgroundColor:color}]} onPress={() => setWcTab(t.id)}>
+                    <Text style={[styles.tabBtnText, wcTab===t.id&&{color:'#fff'}]}>{t.label}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
-
-            {loading ? (
-              <View style={styles.center}><ActivityIndicator color="#FF6B2B" size="large" /></View>
-            ) : (
+            {loading ? <View style={styles.center}><ActivityIndicator color="#FF6B2B" size="large" /></View> : (
               <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-
                 {wcTab === 'matchs' && (
-                  <View>
-                    {wcFixtures.length === 0 ? (
-                      <View style={styles.emptyBox}>
-                        <Text style={styles.emptyText}>Pas de matchs cette semaine</Text>
-                      </View>
-                    ) : wcFixtures.map(function(f) {
-                      return <FixtureCard key={f.fixture.id} f={f} color={color} />;
-                    })}
-                  </View>
+                  wcFixtures.length === 0 ?
+                    <View style={styles.emptyBox}><Text style={styles.emptyText}>Pas de matchs cette semaine</Text></View> :
+                    wcFixtures.map(function(f) { return <FixtureCard key={f.fixture.id} f={f} color={color} />; })
                 )}
-
                 {wcTab === 'groupes' && (
                   <View>
-                    {/* Sélecteur de groupe */}
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom:12 }}>
                       <View style={styles.groupSelector}>
                         {wcGroups.map(function(group, i) {
-                          const gName = group[0]?.group?.replace('Group ', '') || String.fromCharCode(65+i);
+                          const gName = group[0]?.group?.replace('Group ','') || String.fromCharCode(65+i);
                           return (
-                            <TouchableOpacity key={i}
-                              style={[styles.groupBtn, selectedGroup === i && { backgroundColor: color }]}
-                              onPress={() => setSelectedGroup(i)}>
-                              <Text style={[styles.groupBtnText, selectedGroup === i && { color:'#fff' }]}>{gName}</Text>
+                            <TouchableOpacity key={i} style={[styles.groupBtn, selectedGroup===i&&{backgroundColor:color}]} onPress={() => setSelectedGroup(i)}>
+                              <Text style={[styles.groupBtnText, selectedGroup===i&&{color:'#fff'}]}>{gName}</Text>
                             </TouchableOpacity>
                           );
                         })}
                       </View>
                     </ScrollView>
-
-                    {selectedGroup !== null && wcGroups[selectedGroup] && (
-                      <GroupTable group={wcGroups[selectedGroup]} groupIndex={selectedGroup} />
-                    )}
+                    {selectedGroup !== null && wcGroups[selectedGroup] && <GroupTable group={wcGroups[selectedGroup]} />}
                   </View>
                 )}
-
               </ScrollView>
             )}
           </View>
         ) : (
-          // === AUTRES LIGUES ===
           <View style={{ flex:1 }}>
             <View style={styles.tabBar}>
               {[{id:'matchs',label:'Matchs'},{id:'classement',label:'Classement'}].map(function(t) {
                 return (
-                  <TouchableOpacity key={t.id}
-                    style={[styles.tabBtn, tab === t.id && { backgroundColor: color }]}
-                    onPress={() => setTab(t.id)}>
-                    <Text style={[styles.tabBtnText, tab === t.id && { color:'#fff' }]}>{t.label}</Text>
+                  <TouchableOpacity key={t.id} style={[styles.tabBtn, tab===t.id&&{backgroundColor:color}]} onPress={() => setTab(t.id)}>
+                    <Text style={[styles.tabBtnText, tab===t.id&&{color:'#fff'}]}>{t.label}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
-
-            {loading ? (
-              <View style={styles.center}><ActivityIndicator color="#FF6B2B" size="large" /></View>
-            ) : (
+            {loading ? <View style={styles.center}><ActivityIndicator color="#FF6B2B" size="large" /></View> : (
               <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
                 {tab === 'matchs' && (
-                  <View>
-                    {fixtures.length === 0 ? (
-                      <View style={styles.emptyBox}><Text style={styles.emptyText}>Pas de matchs cette semaine</Text></View>
-                    ) : fixtures.map(function(f) {
-                      return <FixtureCard key={f.fixture.id} f={f} color={color} />;
-                    })}
-                  </View>
+                  fixtures.length === 0 ?
+                    <View style={styles.emptyBox}><Text style={styles.emptyText}>Pas de matchs cette semaine</Text></View> :
+                    fixtures.map(function(f) { return <FixtureCard key={f.fixture.id} f={f} color={color} />; })
                 )}
-
                 {tab === 'classement' && (
                   <View>
+                    <Text style={styles.seasonLabel}>SAISON {SEASON_LABELS.FOOTBALL}</Text>
                     <View style={styles.tableHeader}>
                       <Text style={[styles.tableHeaderText, { width:24 }]}>#</Text>
                       <Text style={[styles.tableHeaderText, { flex:1, textAlign:'left' }]}>Equipe</Text>
@@ -348,14 +359,15 @@ export default function SoccerScreen({ onBack, user }) {
                     </View>
                     {standings.map(function(t, i) {
                       return (
-                        <View key={i} style={[styles.tableRow, {
-                          backgroundColor: i % 2 === 0 ? '#16162a' : '#0d0d1a',
-                          borderLeftColor: i === 0 ? '#FFD700' : i < 4 ? color : '#ffffff22',
-                          borderLeftWidth: 3,
-                        }]}>
+                        <TouchableOpacity key={i}
+                          style={[styles.tableRow, {
+                            backgroundColor: i%2===0 ? '#16162a' : '#0d0d1a',
+                            borderLeftColor: i===0 ? '#FFD700' : i<4 ? color : '#ffffff22', borderLeftWidth:3,
+                          }]}
+                          onPress={() => setSelectedTeam(t.team)}>
                           <Text style={[styles.tableCell, { width:24, color:'#ffffff55' }]}>{String(t.rank)}</Text>
                           <View style={[styles.tableTeam, { flex:1 }]}>
-                            {t.team.logo ? <Image source={{ uri: t.team.logo }} style={styles.teamLogoSmall} onError={function(){}} /> : null}
+                            {t.team.logo ? <Image source={{ uri:t.team.logo }} style={styles.teamLogoSmall} onError={function(){}} /> : null}
                             <Text style={styles.tableTeamName} numberOfLines={1}>{t.team.name}</Text>
                           </View>
                           <Text style={[styles.tableCell, { width:28, color:'#ffffff55' }]}>{String(t.all.played)}</Text>
@@ -365,7 +377,7 @@ export default function SoccerScreen({ onBack, user }) {
                           <TouchableOpacity onPress={() => toggleFavorite(t.team)} style={{ width:32, alignItems:'center' }}>
                             <Text style={{ fontSize:16, color: isFav(t.team.name) ? '#FFD700' : '#ffffff33' }}>★</Text>
                           </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>
@@ -378,7 +390,35 @@ export default function SoccerScreen({ onBack, user }) {
     );
   }
 
-  // === PAGE PRINCIPALE — LISTE DES LIGUES ===
+  // === PAGE PAYS ===
+  if (selectedCountry) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => setSelectedCountry(null)}>
+            <Text style={styles.backBtnText}>← Football</Text>
+          </TouchableOpacity>
+          <Text style={styles.leagueTitle}>{selectedCountry.flag} {selectedCountry.name}</Text>
+        </View>
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {selectedCountry.leagues.map(function(l) {
+            return (
+              <TouchableOpacity key={l.id}
+                style={[styles.leagueCard, { borderLeftColor:l.color }]}
+                activeOpacity={0.8}
+                onPress={() => selectLeague(l)}>
+                <View style={[styles.leagueColorDot, { backgroundColor:l.color }]} />
+                <Text style={styles.leagueName}>{l.name}</Text>
+                <Text style={styles.leagueArrow}>›</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // === PAGE PRINCIPALE ===
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -388,12 +428,8 @@ export default function SoccerScreen({ onBack, user }) {
         </View>
       </View>
 
-      {/* Banner Coupe du Monde */}
-      <TouchableOpacity
-        style={styles.wcBanner}
-        activeOpacity={0.8}
-        onPress={() => selectLeague(LEAGUES[0])}>
-        <LinearGradient colors={['#006341', '#004d30']} start={{ x:0, y:0 }} end={{ x:1, y:0 }} style={styles.wcBannerGradient}>
+      <TouchableOpacity style={styles.wcBanner} activeOpacity={0.8} onPress={() => selectLeague(WC_LEAGUE)}>
+        <LinearGradient colors={['#006341','#004d30']} start={{x:0,y:0}} end={{x:1,y:0}} style={styles.wcBannerGradient}>
           <View style={styles.wcBannerContent}>
             <Text style={styles.wcBannerIcon}>🌍</Text>
             <View>
@@ -406,15 +442,20 @@ export default function SoccerScreen({ onBack, user }) {
       </TouchableOpacity>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionLabel}>AUTRES LIGUES</Text>
-        {LEAGUES.slice(1).map(function(l) {
+        <Text style={styles.sectionLabel}>PAYS ET COMPETITIONS</Text>
+        {COUNTRIES.map(function(country) {
           return (
-            <TouchableOpacity
-              key={l.id}
-              style={[styles.leagueCard, { borderLeftColor: l.color }]}
+            <TouchableOpacity key={country.id}
+              style={[styles.countryCard, { borderLeftColor:country.color }]}
               activeOpacity={0.8}
-              onPress={() => selectLeague(l)}>
-              <Text style={styles.leagueName}>{l.name}</Text>
+              onPress={() => setSelectedCountry(country)}>
+              <Text style={styles.countryFlag}>{country.flag}</Text>
+              <View style={{ flex:1 }}>
+                <Text style={styles.countryName}>{country.name}</Text>
+                <Text style={styles.countryLeagues}>
+                  {country.leagues.map(function(l) { return l.name; }).join(' · ')}
+                </Text>
+              </View>
               <Text style={styles.leagueArrow}>›</Text>
             </TouchableOpacity>
           );
@@ -439,19 +480,25 @@ const styles = StyleSheet.create({
   wcBannerSub: { color:'#ffffffcc', fontSize:10, marginTop:2 },
   wcBannerArrow: { color:'#ffffff55', fontSize:24, marginLeft:'auto' },
   sectionLabel: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:11, letterSpacing:2, marginBottom:8 },
+  seasonLabel: { color:'#ffffff44', fontFamily:'BebasNeue', fontSize:10, letterSpacing:2, marginBottom:8 },
   tabBar: { flexDirection:'row', backgroundColor:'#16162a', margin:16, marginTop:0, borderRadius:10, padding:4, gap:4 },
   tabBtn: { flex:1, padding:8, borderRadius:8, alignItems:'center' },
   tabBtnText: { color:'#ffffff55', fontFamily:'BebasNeue', fontSize:12, letterSpacing:0.5 },
   scroll: { padding:16, paddingBottom:40 },
   center: { flex:1, alignItems:'center', justifyContent:'center', padding:40 },
+  countryCard: { backgroundColor:'#16162a', borderRadius:12, padding:14, marginBottom:8, borderLeftWidth:3, flexDirection:'row', alignItems:'center', borderWidth:1, borderColor:'#ffffff0a', gap:12 },
+  countryFlag: { fontSize:24 },
+  countryName: { color:'#fff', fontFamily:'BebasNeue', fontSize:15, letterSpacing:0.5 },
+  countryLeagues: { color:'#ffffff55', fontSize:9, marginTop:2 },
+  leagueColorDot: { width:8, height:8, borderRadius:4 },
+  leagueCard: { backgroundColor:'#16162a', borderRadius:12, padding:16, marginBottom:8, borderLeftWidth:3, flexDirection:'row', alignItems:'center', borderWidth:1, borderColor:'#ffffff0a', gap:10 },
+  leagueName: { color:'#fff', fontFamily:'BebasNeue', fontSize:16, letterSpacing:0.5, flex:1 },
+  leagueArrow: { color:'#ffffff33', fontSize:22 },
   groupSelector: { flexDirection:'row', gap:6, paddingHorizontal:2 },
-  groupBtn: { width:36, height:36, borderRadius:18, backgroundColor:'#16162a',
-              borderWidth:1, borderColor:'#ffffff22', alignItems:'center', justifyContent:'center' },
+  groupBtn: { width:36, height:36, borderRadius:18, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22', alignItems:'center', justifyContent:'center' },
   groupBtnText: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:13 },
   groupCard: { backgroundColor:'#16162a', borderRadius:12, padding:12, marginBottom:12, borderWidth:1, borderColor:'#ffffff14' },
   groupTitle: { fontFamily:'BebasNeue', fontSize:14, letterSpacing:2, marginBottom:8 },
-  qualifiedBadge: { backgroundColor:'#006341', borderRadius:4, paddingHorizontal:4, paddingVertical:1, marginLeft:4 },
-  qualifiedText: { color:'#fff', fontSize:8, fontWeight:'700' },
   tableHeader: { flexDirection:'row', alignItems:'center', paddingHorizontal:4, paddingVertical:4, marginBottom:4 },
   tableHeaderText: { color:'#ffffff55', fontSize:9, fontWeight:'600', textAlign:'center' },
   tableRow: { flexDirection:'row', alignItems:'center', padding:7, borderRadius:6, marginBottom:2 },
@@ -473,11 +520,6 @@ const styles = StyleSheet.create({
   matchTeamName: { color:'#fff', fontSize:12, fontWeight:'600', flex:1 },
   matchScore: { fontFamily:'BebasNeue', fontSize:22, color:'#fff', marginHorizontal:8 },
   venueText: { color:'#ffffff44', fontSize:9, marginTop:6 },
-  leagueCard: { backgroundColor:'#16162a', borderRadius:12, padding:16, marginBottom:8,
-                borderLeftWidth:3, flexDirection:'row', alignItems:'center',
-                borderWidth:1, borderColor:'#ffffff0a' },
-  leagueName: { color:'#fff', fontFamily:'BebasNeue', fontSize:16, letterSpacing:0.5, flex:1 },
-  leagueArrow: { color:'#ffffff33', fontSize:22 },
   emptyBox: { padding:20, backgroundColor:'#16162a', borderRadius:12, alignItems:'center' },
   emptyText: { color:'#ffffff66', fontSize:13, fontFamily:'BebasNeue' },
   backToScreen: { backgroundColor:'#16162a', borderTopWidth:1, borderTopColor:'#ffffff14', padding:16, alignItems:'center' },

@@ -6,6 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { API_SPORTS_KEY } from '../api/config';
 import { supabase } from '../api/supabase';
 import MatchDetailScreen from './MatchDetailScreen';
+import MLBTeamScreen from './MLBTeamScreen';
 
 const H_MLB = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.baseball.api-sports.io' };
 
@@ -26,6 +27,7 @@ export default function MLBScreen({ onBack, user }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const C = '#E53935';
 
   const TABS = [
@@ -50,11 +52,15 @@ export default function MLBScreen({ onBack, user }) {
           { headers: H_MLB }
         );
         const standData = await standRes.json();
-        const al = (standData.response || []).filter(function(t) {
-          return t.league && t.league.name && t.league.name.includes('American');
-        });
-        const nl = (standData.response || []).filter(function(t) {
-          return t.league && t.league.name && t.league.name.includes('National');
+        let al = [];
+        let nl = [];
+        (standData.response || []).forEach(function(group) {
+          if (!Array.isArray(group)) return;
+          group.forEach(function(t) {
+            const gname = (t.group && t.group.name || '').toLowerCase();
+            if (gname.includes('american')) al.push(t);
+            else if (gname.includes('national')) nl.push(t);
+          });
         });
         setStandings({ al, nl });
 
@@ -99,6 +105,10 @@ export default function MLBScreen({ onBack, user }) {
     };
   }
 
+  if (selectedTeam) {
+    return <MLBTeamScreen team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
+  }
+
   if (selectedMatch) {
     return (
       <View style={{ flex:1 }}>
@@ -124,7 +134,7 @@ export default function MLBScreen({ onBack, user }) {
           const wins = t.games && t.games.win ? (typeof t.games.win === 'object' ? t.games.win.total || 0 : t.games.win) : 0;
           const losses = t.games && t.games.lose ? (typeof t.games.lose === 'object' ? t.games.lose.total || 0 : t.games.lose) : 0;
           return (
-            <View key={i} style={[styles.tableRow, {
+            <TouchableOpacity key={i} onPress={() => t.team && setSelectedTeam(t.team)} activeOpacity={0.8} style={[styles.tableRow, {
               backgroundColor: i % 2 === 0 ? '#16162a' : '#0d0d1a',
               borderLeftColor: i === 0 ? '#FFD700' : i < 3 ? C : '#ffffff22',
               borderLeftWidth: 3,
@@ -139,7 +149,7 @@ export default function MLBScreen({ onBack, user }) {
               <TouchableOpacity onPress={() => t.team && toggleFavorite(t.team)} style={{ width:32, alignItems:'center' }}>
                 <Text style={{ fontSize:16, color: isFav(t.team && t.team.name) ? '#FFD700' : '#ffffff33' }}>★</Text>
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>

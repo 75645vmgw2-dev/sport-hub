@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.kazmo.login",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Kazmo utilise la camera pour votre photo de profil.",
@@ -35,14 +35,18 @@
     },
     "plugins": [
       "expo-font",
+      "expo-speech-recognition",
       "expo-apple-authentication",
       "expo-notifications",
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.579139707826-mhh95e0puqmlnkbg156uen66piipm023"
+          "iosUrlScheme": "com.googleusercontent.apps.579139707826-7na99fj0talskda7l0sfquuqkvd020qs"
         }
-      ]
+      ],
+      "expo-localization",
+      "expo-splash-screen",
+      "./withModularHeaders"
     ],
     "extra": {
       "eas": {

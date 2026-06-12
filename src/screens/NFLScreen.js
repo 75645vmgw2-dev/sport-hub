@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { API_SPORTS_KEY } from '../api/config';
 import { supabase } from '../api/supabase';
+import NFLTeamScreen from './NFLTeamScreen';
 
 const H_NFL = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.american-football.api-sports.io' };
 
@@ -24,6 +25,7 @@ export default function NFLScreen({ onBack, user }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const C = '#1A73E8';
+  const [selectedTeam, setSelectedTeam] = useState(null);
 
   const TABS = [
     { id:'afc', label:'AFC' },
@@ -39,10 +41,10 @@ export default function NFLScreen({ onBack, user }) {
         );
         const standData = await standRes.json();
         const afc = (standData.response || []).filter(function(t) {
-          return t.conference && t.conference.name === 'AFC';
+          return t.conference && t.conference.includes('American');
         });
         const nfc = (standData.response || []).filter(function(t) {
-          return t.conference && t.conference.name === 'NFC';
+          return t.conference && t.conference.includes('National');
         });
         setStandings({ afc, nfc });
 
@@ -74,6 +76,10 @@ export default function NFLScreen({ onBack, user }) {
 
   function isFav(name) { return favorites.some(function(f) { return f.team_name === name; }); }
 
+  if (selectedTeam) {
+    return <NFLTeamScreen team={selectedTeam} onBack={() => setSelectedTeam(null)} />;
+  }
+
   function StandingsTable({ data }) {
     return (
       <View>
@@ -88,7 +94,7 @@ export default function NFLScreen({ onBack, user }) {
           const wins = t.won || 0;
           const losses = t.lost || 0;
           return (
-            <View key={i} style={[styles.tableRow, {
+            <TouchableOpacity key={i} onPress={() => t.team && setSelectedTeam(t.team)} activeOpacity={0.8} style={[styles.tableRow, {
               backgroundColor: i % 2 === 0 ? '#16162a' : '#0d0d1a',
               borderLeftColor: i === 0 ? '#FFD700' : i < 3 ? C : '#ffffff22',
               borderLeftWidth: 3,
@@ -103,7 +109,7 @@ export default function NFLScreen({ onBack, user }) {
               <TouchableOpacity onPress={() => t.team && toggleFavorite(t.team)} style={{ width:32, alignItems:'center' }}>
                 <Text style={{ fontSize:16, color: isFav(t.team && t.team.name) ? '#FFD700' : '#ffffff33' }}>★</Text>
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>

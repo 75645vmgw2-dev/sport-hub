@@ -6,7 +6,7 @@ import { supabase } from './src/api/supabase';
 import { useFonts, BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { LanguageProvider, useLanguage } from './src/i18n/LanguageContext';
 import * as Notifications from 'expo-notifications';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import HomeScreen from './src/screens/HomeScreen';
 import LiveScreen from './src/screens/LiveScreen';
 import AgendaScreen from './src/screens/AgendaScreen';
@@ -14,12 +14,12 @@ import FavoritesScreen from './src/screens/FavoritesScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import ConseilsScreen from './src/screens/ConseilsScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 import NBAScreen from './src/screens/NBAScreen';
 import NHLScreen from './src/screens/NHLScreen';
 import MLBScreen from './src/screens/MLBScreen';
 import NFLScreen from './src/screens/NFLScreen';
 import SoccerScreen from './src/screens/SoccerScreen';
-import TennisScreen from './src/screens/TennisScreen';
 import F1Screen from './src/screens/F1Screen';
 import GolfScreen from './src/screens/GolfScreen';
 import MMAScreen from './src/screens/MMAScreen';
@@ -43,24 +43,15 @@ async function registerForPushNotifications(userId, language) {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') return;
-
     const tokenData = await Notifications.getExpoPushTokenAsync({
       projectId: '3cf98fe2-b872-475b-bb43-e6034ec85261',
     });
     const token = tokenData.data;
-
     await supabase.from('push_tokens').upsert({
-      user_id: userId,
-      token: token,
-      language: language || 'fr',
-      platform: Platform.OS,
-      updated_at: new Date().toISOString(),
+      user_id: userId, token, language: language || 'fr',
+      platform: Platform.OS, updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
-
-    console.log('Push token enregistre:', token);
-  } catch(e) {
-    console.log('Erreur push token:', e.message);
-  }
+  } catch(e) { console.log('Erreur push token:', e.message); }
 }
 
 function TabIcon({ emoji, label, focused }) {
@@ -69,8 +60,7 @@ function TabIcon({ emoji, label, focused }) {
       <Text style={{ fontSize:20 }}>{emoji}</Text>
       <Text style={{
         fontFamily:'BebasNeue', fontSize:9, letterSpacing:0.5,
-        color: focused ? '#FF6B2B' : '#ffffff99', marginTop:1,
-        textAlign:'center',
+        color: focused ? '#FF6B2B' : '#ffffff99', marginTop:1, textAlign:'center',
       }} numberOfLines={1}>{label}</Text>
     </View>
   );
@@ -88,15 +78,14 @@ function SportWrapper({ children, onBack, label }) {
 }
 
 function AppContent() {
-  const { t, language, loaded: langLoaded } = useLanguage();
+  const { t, language, setLanguage, loaded: langLoaded } = useLanguage();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentSport, setCurrentSport] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
   const navigationRef = useRef(null);
-
-  const [fontsLoaded] = useFonts({
-    BebasNeue: BebasNeue_400Regular,
-  });
+  const [fontsLoaded] = useFonts({ BebasNeue: BebasNeue_400Regular });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -109,14 +98,50 @@ function AppContent() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Si user existant -> skip onboarding
   useEffect(() => {
-    if (user) {
-      registerForPushNotifications(user.id, language);
+    async function markDoneIfExistingUser() {
+      if (!user) return;
+      try {
+        const done = await AsyncStorage.getItem('kazmo_onboarding_done');
+        if (done !== 'true') {
+          await AsyncStorage.setItem('kazmo_onboarding_done', 'true');
+          setShowOnboarding(false);
+        }
+      } catch(e) {}
     }
+    markDoneIfExistingUser();
+  }, [user]);
+
+  // Vérifier si l'onboarding a déjà été fait
+  useEffect(() => {
+    async function checkOnboarding() {
+      try {
+        const done = await AsyncStorage.getItem('kazmo_onboarding_done');
+        setShowOnboarding(done !== 'true');
+      } catch(e) {
+        setShowOnboarding(false);
+      } finally {
+        setOnboardingChecked(true);
+      }
+    }
+    checkOnboarding();
+  }, []);
+
+  useEffect(() => {
+    if (user) registerForPushNotifications(user.id, language);
   }, [user, language]);
 
   function goToLive() {
     if (navigationRef.current) navigationRef.current.navigate('Live');
+  }
+
+  async function handleOnboardingDone(selectedLang) {
+    try {
+      await AsyncStorage.setItem('kazmo_onboarding_done', 'true');
+      if (setLanguage) setLanguage(selectedLang);
+    } catch(e) {}
+    setShowOnboarding(false);
   }
 
   if (loading || !fontsLoaded || !langLoaded) {
@@ -129,7 +154,12 @@ function AppContent() {
     );
   }
 
-  if (!user) return <AuthScreen onLogin={setUser} />;
+  // Onboarding — affiché avant l'auth pour les nouveaux utilisateurs
+  if (showOnboarding) {
+    return <OnboardingScreen onDone={handleOnboardingDone} userId={user?.id || null} />;
+  }
+
+  if (!user) return <AuthScreen onLogin={setUser} onSignup={function(u){setUser(u);setShowOnboarding(true);}} />;
 
   if (currentSport) {
     const back = () => setCurrentSport(null);
@@ -140,8 +170,7 @@ function AppContent() {
     else if (currentSport.id === 'baseball') SportScreen = <MLBScreen {...props} />;
     else if (currentSport.id === 'nfl') SportScreen = <NFLScreen {...props} />;
     else if (currentSport.id === 'soccer') SportScreen = <SoccerScreen {...props} />;
-    else if (currentSport.id === 'tennis') SportScreen = <TennisScreen {...props} />;
-    else if (currentSport.id === 'f1') SportScreen = <F1Screen {...props} />;
+    else if (currentSport.id === 'f1') SportScreen = <F1Screen {...props} initialTab={currentSport.initialTab||'races'} />;
     else if (currentSport.id === 'golf') SportScreen = <GolfScreen {...props} />;
     else if (currentSport.id === 'mma') SportScreen = <MMAScreen {...props} />;
     else SportScreen = (
@@ -176,7 +205,7 @@ function AppContent() {
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" label={t('tabHome')} focused={focused} /> }}
         />
         <Tab.Screen name="Live"
-          component={LiveScreen}
+          children={() => <LiveScreen onSelectSport={setCurrentSport} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📺" label={t('tabLive')} focused={focused} /> }}
         />
         <Tab.Screen name="Conseils"
@@ -209,23 +238,12 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  splash: {
-    flex:1, backgroundColor:'#080814',
-    alignItems:'center', justifyContent:'center', flexDirection:'row',
-  },
+  splash: { flex:1, backgroundColor:'#080814', alignItems:'center', justifyContent:'center', flexDirection:'row' },
   splashWhite: { fontSize:72, letterSpacing:6, color:'#fff', fontFamily:'BebasNeue' },
   splashOrange: { fontSize:72, letterSpacing:6, color:'#FF6B2B', fontFamily:'BebasNeue' },
-  comingSoon: {
-    flex:1, backgroundColor:'#080814',
-    alignItems:'center', justifyContent:'center', padding:40,
-  },
+  comingSoon: { flex:1, backgroundColor:'#080814', alignItems:'center', justifyContent:'center', padding:40 },
   comingSoonIcon: { fontSize:64, marginBottom:16 },
   comingSoonText: { color:'#fff', fontFamily:'BebasNeue', fontSize:32, letterSpacing:2 },
-  bottomBackBtn: {
-    backgroundColor:'#16162a', borderTopWidth:1, borderTopColor:'#ffffff22',
-    padding:16, alignItems:'center',
-  },
-  bottomBackBtnText: {
-    color:'#FF6B2B', fontFamily:'BebasNeue', fontSize:16, letterSpacing:1.5,
-  },
+  bottomBackBtn: { backgroundColor:'#16162a', borderTopWidth:1, borderTopColor:'#ffffff22', padding:16, alignItems:'center' },
+  bottomBackBtnText: { color:'#FF6B2B', fontFamily:'BebasNeue', fontSize:16, letterSpacing:1.5 },
 });

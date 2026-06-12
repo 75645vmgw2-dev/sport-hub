@@ -4,8 +4,45 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import Svg, { Path, G } from 'react-native-svg';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Localization from 'expo-localization';
 import { supabase } from '../api/supabase';
 import { useLanguage } from '../i18n/LanguageContext';
+
+// ── Google Sign In — chargement protégé (simulateur compatible) ──
+let GoogleSignin = null;
+let statusCodes = {};
+try {
+  const GoogleSigninModule = require('@react-native-google-signin/google-signin');
+  GoogleSignin = GoogleSigninModule.GoogleSignin;
+  statusCodes = GoogleSigninModule.statusCodes;
+  GoogleSignin.configure({
+    webClientId: '579139707826-mhh95e0puqmlnkbg156uen66piipm023.apps.googleusercontent.com',
+    iosClientId: '579139707826-7na99fj0talskda7l0sfquuqkvd020qs.apps.googleusercontent.com',
+    scopes: ['profile', 'email'],
+  });
+} catch(e) {}
+
+// ── Détecte la langue du téléphone ──────────────────────────────
+function getDeviceLanguage() {
+  try {
+    const locale = Localization.getLocales?.()?.[0]?.languageCode || 'fr';
+    const supported = ['fr', 'en', 'es', 'pt', 'de', 'it', 'ar', 'ru'];
+    return supported.indexOf(locale) >= 0 ? locale : 'en';
+  } catch(e) { return 'fr'; }
+}
+
+// ── Sauvegarde le profil avec la langue ──────────────────────────
+async function saveProfile(userId, email, firstName, lastName, avatarUrl) {
+  const lang = getDeviceLanguage();
+  await supabase.from('profiles').upsert({
+    id: userId,
+    email: email || '',
+    first_name: firstName || '',
+    last_name: lastName || '',
+    avatar_url: avatarUrl || null,
+    language: lang,
+  });
+}
 
 function GradientText({ text, fontSize, letterSpacing }) {
   return (
@@ -31,14 +68,18 @@ function GoogleIcon() {
   );
 }
 
-export default function AuthScreen({ onLogin }) {
-  const { t } = useLanguage();
+export default function AuthScreen({ onLogin, onSignup }) {
+  const { t: tLang } = useLanguage(); const t = (key) => { const en = {tagline:'LIVE RESULTS · ALL SPORTS',login:'Login',signup:'Create Account',email:'Email',password:'Password',connect:'SIGN IN',createAccount:'CREATE ACCOUNT',noAccount:'No account? Sign up',hasAccount:'Already have an account? Sign in',continueApple:'Continue with Apple',continueGoogle:'Continue with Google',errorFill:'Please fill all fields'}; return en[key] || tLang(key); };
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingApple, setLoadingApple] = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [loadingReset, setLoadingReset] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   useEffect(() => {
     AppleAuthentication.isAvailableAsync().then(function(available) {
@@ -58,17 +99,46 @@ export default function AuthScreen({ onLogin }) {
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        onLogin(data.user);
+        if (data.user) {
+          await saveProfile(data.user.id, data.user.email, '', '', null);
+          onLogin(data.user);
+        }
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        if (data.user) onLogin(data.user);
-        else Alert.alert('', 'Verifie ton email pour confirmer ton compte.');
+        if (data.user) {
+          await saveProfile(data.user.id, data.user.email, '', '', null);
+          if (onSignup) onSignup(data.user);
+          else onLogin(data.user);
+        } else {
+          Alert.alert('✅', 'Check your email to confirm your KAZMO account.');
+        }
       }
     } catch(e) {
       Alert.alert('Erreur', e.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!resetEmail.trim()) {
+      Alert.alert('', 'Entre ton adresse email.');
+      return;
+    }
+    setLoadingReset(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: 'https://kazmo.app/confirm.html',
+      });
+      if (error) throw error;
+      Alert.alert('✅', 'Reset email sent! Check your inbox.');
+      setShowForgot(false);
+      setResetEmail('');
+    } catch(e) {
+      Alert.alert('Erreur', e.message);
+    } finally {
+      setLoadingReset(false);
     }
   }
 
@@ -87,15 +157,10 @@ export default function AuthScreen({ onLogin }) {
           token: credential.identityToken,
         });
         if (error) throw error;
-        if (credential.fullName?.givenName && data.user) {
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            email: data.user.email,
-            first_name: credential.fullName.givenName || '',
-            last_name: credential.fullName.familyName || '',
-          });
+        if (data.user) {
+          await saveProfile(data.user.id, data.user.email, credential.fullName?.givenName || '', credential.fullName?.familyName || '', null);
+          onLogin(data.user);
         }
-        onLogin(data.user);
       }
     } catch(e) {
       if (e.code !== 'ERR_REQUEST_CANCELED') {
@@ -107,11 +172,69 @@ export default function AuthScreen({ onLogin }) {
   }
 
   async function handleGoogleSignIn() {
-    // Google Sign In sera activé lors du build EAS
-    Alert.alert(
-      'Google Sign In',
-      'La connexion Google sera disponible dans la version finale de l\'app.',
-      [{ text: 'OK' }]
+    if (!GoogleSignin) {
+      Alert.alert('', 'Google Sign In est disponible uniquement sur appareil réel via TestFlight.');
+      return;
+    }
+    setLoadingGoogle(true);
+    try {
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.signOut();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo?.data?.idToken || userInfo?.idToken;
+      if (!idToken) throw new Error('Impossible de récupérer le token Google.');
+      const { data, error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
+      if (error) throw error;
+      if (data.user) {
+        const googleUser = userInfo?.data?.user || userInfo?.user;
+        await saveProfile(data.user.id, data.user.email, googleUser?.givenName || '', googleUser?.familyName || '', googleUser?.photo || null);
+        onLogin(data.user);
+      }
+    } catch(e) {
+      if (e.code === statusCodes.SIGN_IN_CANCELLED) {
+      } else if (e.code === statusCodes.IN_PROGRESS) {
+        Alert.alert('', 'Connexion Google déjà en cours...');
+      } else if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert('Erreur', 'Google Play Services non disponible.');
+      } else {
+        Alert.alert('Erreur Google', e.message);
+      }
+    } finally {
+      setLoadingGoogle(false);
+    }
+  }
+
+  // ── Modal mot de passe oublié ────────────────────────────────
+  if (showForgot) {
+    return (
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <View style={styles.logoSection}>
+          <Image source={require('../../assets/icon.png')} style={styles.logoImage} resizeMode="contain" />
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>FORGOT PASSWORD</Text>
+          <Text style={styles.forgotSubtitle}>Enter your email and we'll send you a reset link.</Text>
+          <Text style={styles.fieldLabel}>EMAIL</Text>
+          <TextInput
+            value={resetEmail}
+            onChangeText={setResetEmail}
+            style={styles.input}
+            placeholder="ton@email.com"
+            placeholderTextColor="#ffffff44"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoFocus
+          />
+          <TouchableOpacity onPress={handleForgotPassword} disabled={loadingReset} activeOpacity={0.85}>
+            <LinearGradient colors={['#FF6B2B', '#FFD600']} start={{ x:0, y:0 }} end={{ x:1, y:0 }} style={styles.mainBtn}>
+              {loadingReset ? <ActivityIndicator color="#fff" /> : <Text style={styles.mainBtnText}>📧 SEND RESET LINK</Text>}
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setShowForgot(false); setResetEmail(''); }} style={styles.switchBtn}>
+            <Text style={styles.switchText}>← Back to login</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     );
   }
 
@@ -130,29 +253,18 @@ export default function AuthScreen({ onLogin }) {
 
         {/* Apple Sign In */}
         {appleAvailable && (
-          <TouchableOpacity
-            style={styles.appleBtn}
-            activeOpacity={0.8}
-            onPress={handleAppleSignIn}
-            disabled={loadingApple}>
-            {loadingApple ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <>
-                <Text style={styles.appleBtnIcon}></Text>
-                <Text style={styles.appleBtnText}>{t('continueApple')}</Text>
-              </>
+          <TouchableOpacity style={styles.appleBtn} activeOpacity={0.8} onPress={handleAppleSignIn} disabled={loadingApple}>
+            {loadingApple ? <ActivityIndicator color="#fff" size="small" /> : (
+              <><Text style={styles.appleBtnIcon}></Text><Text style={styles.appleBtnText}>{t('continueApple')}</Text></>
             )}
           </TouchableOpacity>
         )}
 
         {/* Google Sign In */}
-        <TouchableOpacity
-          style={[styles.socialBtn, styles.googleBtn]}
-          activeOpacity={0.8}
-          onPress={handleGoogleSignIn}>
-          <GoogleIcon />
-          <Text style={styles.socialBtnText}>{t('continueGoogle')}</Text>
+        <TouchableOpacity style={[styles.socialBtn, styles.googleBtn]} activeOpacity={0.8} onPress={handleGoogleSignIn} disabled={loadingGoogle}>
+          {loadingGoogle ? <ActivityIndicator color="#fff" size="small" /> : (
+            <><GoogleIcon /><Text style={styles.socialBtnText}>{t('continueGoogle')}</Text></>
+          )}
         </TouchableOpacity>
 
         <View style={styles.dividerRow}>
@@ -161,47 +273,27 @@ export default function AuthScreen({ onLogin }) {
           <View style={styles.dividerLine} />
         </View>
 
-        {/* Email */}
         <Text style={styles.fieldLabel}>{t('email')}</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-          placeholder={t('email')}
-          placeholderTextColor="#ffffff44"
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        <TextInput value={email} onChangeText={setEmail} style={styles.input} placeholder={t('email')} placeholderTextColor="#ffffff44" autoCapitalize="none" keyboardType="email-address" />
 
-        {/* Password */}
         <Text style={styles.fieldLabel}>{t('password')}</Text>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-          placeholder={t('password')}
-          placeholderTextColor="#ffffff44"
-          secureTextEntry
-        />
+        <TextInput value={password} onChangeText={setPassword} style={styles.input} placeholder={t('password')} placeholderTextColor="#ffffff44" secureTextEntry />
 
-        {/* Bouton principal */}
-        <TouchableOpacity onPress={handleAuth} disabled={loading} activeOpacity={0.85}>
-          <LinearGradient
-            colors={['#FF6B2B', '#FFD600']}
-            start={{ x:0, y:0 }} end={{ x:1, y:0 }}
-            style={styles.mainBtn}>
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.mainBtnText}>{isLogin ? t('connect') : t('createAccount')}</Text>
-            }
+        {/* Mot de passe oublié — visible uniquement en mode connexion */}
+        {isLogin && (
+          <TouchableOpacity onPress={() => setShowForgot(true)} style={styles.forgotBtn}>
+            <Text style={styles.forgotBtnText}>Forgot password?</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity onPress={handleAuth} disabled={loading} activeOpacity={0.85} style={{ marginTop: isLogin ? 8 : 4 }}>
+          <LinearGradient colors={['#FF6B2B', '#FFD600']} start={{ x:0, y:0 }} end={{ x:1, y:0 }} style={styles.mainBtn}>
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.mainBtnText}>{isLogin ? t('connect') : t('createAccount')}</Text>}
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Switch login/signup */}
         <TouchableOpacity onPress={() => setIsLogin(!isLogin)} style={styles.switchBtn}>
-          <Text style={styles.switchText}>
-            {isLogin ? t('noAccount') : t('hasAccount')}
-          </Text>
+          <Text style={styles.switchText}>{isLogin ? t('noAccount') : t('hasAccount')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -210,32 +302,27 @@ export default function AuthScreen({ onLogin }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow:1, backgroundColor:'#080814',
-    alignItems:'center', justifyContent:'center', padding:24,
-  },
+  container: { flexGrow:1, backgroundColor:'#080814', alignItems:'center', justifyContent:'center', padding:24 },
   logoSection: { alignItems:'center', marginBottom:32 },
   logoImage: { width:160, height:160, borderRadius:32, marginBottom:8 },
   tagline: { color:'#ffffffcc', fontSize:10, letterSpacing:2, textTransform:'uppercase', marginTop:4 },
   card: { width:'100%', backgroundColor:'#16162a', borderRadius:20, padding:22, borderWidth:1, borderColor:'#ffffff14' },
   cardTitle: { color:'#fff', fontFamily:'BebasNeue', fontSize:22, letterSpacing:2, textAlign:'center', marginBottom:18 },
-  appleBtn: { flexDirection:'row', alignItems:'center', justifyContent:'center', gap:10,
-              backgroundColor:'#000', borderRadius:12, padding:14, marginBottom:10,
-              borderWidth:1, borderColor:'#ffffff22', minHeight:48 },
+  appleBtn: { flexDirection:'row', alignItems:'center', justifyContent:'center', gap:10, backgroundColor:'#000', borderRadius:12, padding:14, marginBottom:10, borderWidth:1, borderColor:'#ffffff22', minHeight:48 },
   appleBtnIcon: { color:'#fff', fontSize:18 },
   appleBtnText: { color:'#fff', fontSize:14, fontWeight:'600' },
-  socialBtn: { flexDirection:'row', alignItems:'center', justifyContent:'center', gap:10,
-               backgroundColor:'#000', borderRadius:12, padding:14, marginBottom:10,
-               borderWidth:1, borderColor:'#ffffff22' },
+  socialBtn: { flexDirection:'row', alignItems:'center', justifyContent:'center', gap:10, backgroundColor:'#000', borderRadius:12, padding:14, marginBottom:10, borderWidth:1, borderColor:'#ffffff22', minHeight:48 },
   googleBtn: { backgroundColor:'#ffffff0a' },
   socialBtnText: { color:'#fff', fontSize:14, fontWeight:'600' },
   dividerRow: { flexDirection:'row', alignItems:'center', gap:10, marginVertical:14 },
   dividerLine: { flex:1, height:1, backgroundColor:'#ffffff22' },
   dividerText: { color:'#ffffff55', fontSize:12 },
   fieldLabel: { color:'#ffffffcc', fontSize:11, fontFamily:'BebasNeue', letterSpacing:1, marginBottom:6 },
-  input: { backgroundColor:'#0d0d1a', borderRadius:12, padding:14, color:'#fff',
-           fontSize:14, borderWidth:1, borderColor:'#ffffff22', marginBottom:14 },
-  mainBtn: { borderRadius:12, padding:16, alignItems:'center', marginTop:4 },
+  input: { backgroundColor:'#0d0d1a', borderRadius:12, padding:14, color:'#fff', fontSize:14, borderWidth:1, borderColor:'#ffffff22', marginBottom:14 },
+  forgotBtn: { alignItems:'flex-end', marginTop:-8, marginBottom:8 },
+  forgotBtnText: { color:'#FF6B2B', fontSize:12 },
+  forgotSubtitle: { color:'#ffffff66', fontSize:13, marginBottom:20, lineHeight:20 },
+  mainBtn: { borderRadius:12, padding:16, alignItems:'center' },
   mainBtnText: { color:'#fff', fontFamily:'BebasNeue', fontSize:18, letterSpacing:2 },
   switchBtn: { marginTop:14, alignItems:'center' },
   switchText: { color:'#ffffffcc', fontSize:12 },
