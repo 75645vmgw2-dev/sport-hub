@@ -176,6 +176,26 @@ function AISection({ content, loading, onRefresh }) {
   );
 }
 
+function GolfLeaderboard({ match }) {
+  const players = match.allPlayers || match.players || [];
+  return (
+    <View style={{padding:16}}>
+      <Text style={{color:'#2E7D32',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1,marginBottom:12}}>{match.tournamentName||match.home||'Golf Tournament'}</Text>
+      {players.map(function(p, i) {
+        const scoreColor = p.score && p.score.startsWith('-') ? '#4CAF50' : p.score === 'E' ? '#fff' : '#E53935';
+        return (
+          <View key={i} style={{flexDirection:'row',alignItems:'center',gap:8,paddingVertical:8,borderBottomWidth:1,borderBottomColor:'#ffffff0a'}}>
+            <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:13,width:28}}>#{i+1}</Text>
+            <Text style={{color:'#fff',fontSize:13,flex:1}} numberOfLines={1}>{p.name}</Text>
+            <Text style={{color:scoreColor,fontFamily:'BebasNeue',fontSize:14,minWidth:36,textAlign:'right'}}>{p.score||'E'}</Text>
+            <Text style={{color:'#ffffff55',fontSize:10,minWidth:30,textAlign:'right'}}>{p.thru||'-'}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 export default function MatchDetailScreen({ match, sport, color, onBack }) {
   const { language } = useLanguage();
   
@@ -805,7 +825,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
             {loadingForm ? (
               <View style={styles.loadingBox}><ActivityIndicator color="#FF6B2B" size="large" /></View>
             ) : sport==='GOLF' ? (
-              <GolfAssistant match={match} language={language} />
+              <GolfLeaderboard match={match} />
             ) : sport==='F1'||sport==='MMA'||sport==='TENNIS' ? (
               <AISection content={aiContent||''} loading={loadingAI}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />

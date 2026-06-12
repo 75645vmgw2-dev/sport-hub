@@ -571,11 +571,17 @@ function UsersTab() {
   async function fetchUsers(p, s) {
     setLoading(true);
     try {
-      let query = supabase.from('profiles').select('id, email, first_name, last_name, created_at, language', { count:'exact' })
-        .order('created_at', { ascending: false })
-        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
-      if (s.trim()) query = query.or('email.ilike.%' + s + '%,first_name.ilike.%' + s + '%,last_name.ilike.%' + s + '%');
-      const { data, count } = await query;
+      const { data: allData, error } = await supabase.rpc('get_all_profiles');
+      if (error) throw error;
+      let filtered = allData || [];
+      if (s.trim()) {
+        const q = s.toLowerCase();
+        filtered = filtered.filter(function(u) {
+          return (u.email||'').toLowerCase().includes(q) || (u.first_name||'').toLowerCase().includes(q) || (u.last_name||'').toLowerCase().includes(q);
+        });
+      }
+      const count = filtered.length;
+      const data = filtered.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
       // Récupérer les sports favoris
       const ids = (data||[]).map(function(u){return u.id;});
       let sportsMap = {};
