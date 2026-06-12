@@ -112,7 +112,11 @@ function GolfAssistant({ match, language }) {
             style={[styles.aiText,{backgroundColor:'#0d0d1a',borderRadius:10,padding:12,borderWidth:1,borderColor:'#ffffff22',color:'#fff',minHeight:60}]}
             placeholder={language==='fr'?'Pose ta question sur le tournoi...':'Ask your question about the tournament...'}
             placeholderTextColor="#ffffff44" multiline
+            blurOnSubmit={false}
           />
+          <TouchableOpacity onPress={function(){require('react-native').Keyboard.dismiss();}} style={{alignSelf:'flex-end',paddingHorizontal:8,paddingVertical:4,backgroundColor:'#ffffff11',borderRadius:6}}>
+            <Text style={{color:'#ffffff66',fontSize:11}}>⌨️ Close</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={ask} disabled={!question.trim()} style={{opacity:question.trim()?1:0.4}}>
             <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:10,padding:12,alignItems:'center'}}>
               <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1}}>🔮 ANALYSER</Text>

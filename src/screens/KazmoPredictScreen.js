@@ -441,7 +441,7 @@ export default function KazmoPredictScreen({ onBack }) {
     const l2=simpleSport?.id==='f1'?'Pilote 2':isInd?'Joueur 2':t('predictTeam2');
     return(
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.header}><TouchableOpacity onPress={()=>setMode(null)}><Text style={styles.backBtnText}>←</Text></TouchableOpacity><GradientText text="ANALYSE MATCH" fontSize={20} letterSpacing={1}/></View>
           <Text style={styles.fieldLabel}>{t('chooseSport').toUpperCase()}</Text>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:16}}>{ALL_SPORTS.map(function(s){return(<TouchableOpacity key={s.id} style={[styles.sportChip,simpleSport?.id===s.id&&{backgroundColor:s.color,borderColor:s.color}]} onPress={()=>{setSimpleSport(s);setSimpleTeam1('');setSimpleTeam2('');setSimpleSurface(null);setSoccerLeague(null);}}><Text style={styles.sportChipIcon}>{s.icon}</Text><Text style={[styles.sportChipLabel,simpleSport?.id===s.id&&{color:'#fff'}]}>{s.label}</Text></TouchableOpacity>);})}</View>
@@ -484,7 +484,7 @@ export default function KazmoPredictScreen({ onBack }) {
     const validCount=parlayBets.filter(function(b){const s=b.sport&&SOLO_SPORTS.indexOf(b.sport.id)>=0;return b.sport&&b.team1&&(s||b.team2)&&(b.sport.id!=='tennis'||b.surface);}).length;
     return(
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.header}><TouchableOpacity onPress={()=>setMode(null)}><Text style={styles.backBtnText}>←</Text></TouchableOpacity><GradientText text="COMBINÉ" fontSize={20} letterSpacing={1}/></View>
           {parlayBets.map(function(bet,index){
             const isSolo=bet.sport?SOLO_SPORTS.indexOf(bet.sport.id)>=0:false;
@@ -519,7 +519,7 @@ export default function KazmoPredictScreen({ onBack }) {
     const canAnalyze=pronoSport&&pronoQuestion&&(pronoQuestion.id!=='custom'||pronoCustom.trim());
     return(
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.header}><TouchableOpacity onPress={()=>setMode(null)}><Text style={styles.backBtnText}>←</Text></TouchableOpacity><GradientText text="PRONOSTIC SAISON" fontSize={18} letterSpacing={1}/></View>
           <Text style={styles.fieldLabel}>{t('chooseSport').toUpperCase()}</Text>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:16}}>{ALL_SPORTS.map(function(s){return(<TouchableOpacity key={s.id} style={[styles.sportChip,pronoSport?.id===s.id&&{backgroundColor:s.color,borderColor:s.color}]} onPress={()=>setPronoSport(s)}><Text style={styles.sportChipIcon}>{s.icon}</Text><Text style={[styles.sportChipLabel,pronoSport?.id===s.id&&{color:'#fff'}]}>{s.label}</Text></TouchableOpacity>);})}</View>

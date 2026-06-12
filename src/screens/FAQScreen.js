@@ -246,7 +246,7 @@ export default function FAQScreen({ user, onBack }) {
 
         {/* TAB ASK */}
         {tab === 'ask' && (
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
 
             {/* Avatar Kazmo */}
             <View style={styles.askBox}>

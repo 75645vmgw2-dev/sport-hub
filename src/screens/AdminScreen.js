@@ -861,7 +861,7 @@ function UsersScreen({ supabase }) {
   const LANG_FLAGS = { fr:'🇫🇷', en:'🇬🇧', es:'🇪🇸', pt:'🇧🇷', de:'🇩🇪', it:'🇮🇹', ar:'🇸🇦', ru:'🇷🇺' };
 
   return (
-    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
       <View style={styles.notifStatsCard}>
         <Text style={styles.notifStatsIcon}>👤</Text>
         <View style={{flex:1}}>
@@ -1321,7 +1321,7 @@ export default function AdminScreen({ onClose, adminUser }) {
       )}
 
       {tab==='match' && showMatchForm && (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.formHeader}>
             <TouchableOpacity onPress={()=>{setShowMatchForm(false);setEditingMatch(null);}}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
             <Text style={styles.formTitle}>{editingMatch?'Modifier Match':'Programmer Match'}</Text>
@@ -1454,7 +1454,7 @@ export default function AdminScreen({ onClose, adminUser }) {
       )}
 
       {tab==='events' && showEventForm && (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.formHeader}>
             <TouchableOpacity onPress={()=>{setShowEventForm(false);setEditingEvent(null);}}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
             <Text style={styles.formTitle}>{editingEvent?'Modifier Événement':'Nouvel Événement'}</Text>
@@ -1535,7 +1535,7 @@ export default function AdminScreen({ onClose, adminUser }) {
       )}
 
       {tab==='flash' && showForm && (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.formHeader}>
             <TouchableOpacity onPress={()=>{setShowForm(false);setEditingFlash(null);}}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
             <Text style={styles.formTitle}>{editingFlash?'Modifier Flash':'Nouveau Flash'}</Text>
@@ -1625,7 +1625,7 @@ export default function AdminScreen({ onClose, adminUser }) {
 
       {/* ── NOTIFS AVEC FILTRES LANGUE + SPORT ── */}
       {tab==='notifs' && (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.notifStatsCard}>
             <Text style={styles.notifStatsIcon}>📱</Text>
             <View style={{flex:1}}>
