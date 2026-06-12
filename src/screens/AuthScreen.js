@@ -74,6 +74,8 @@ export default function AuthScreen({ onLogin, onSignup }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingApple, setLoadingApple] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
@@ -112,7 +114,7 @@ export default function AuthScreen({ onLogin, onSignup }) {
         const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: 'https://www.kazmo.app/confirm.html' } });
         if (error) throw error;
         if (data.user) {
-          await saveProfile(data.user.id, data.user.email, '', '', null);
+          await saveProfile(data.user.id, data.user.email, firstName, lastName, null);
           if (onSignup) onSignup(data.user);
           else onLogin(data.user);
         } else {
@@ -284,6 +286,12 @@ export default function AuthScreen({ onLogin, onSignup }) {
         <Text style={styles.fieldLabel}>{t('password')}</Text>
         <TextInput value={password} onChangeText={setPassword} style={styles.input} placeholder={t('password')} placeholderTextColor="#ffffff44" secureTextEntry />
 
+        {/* Champs nom/prénom — visible uniquement au signup */}
+        {!isLogin && (
+          <><Text style={styles.fieldLabel}>FIRST NAME</Text>
+          <TextInput value={firstName} onChangeText={setFirstName} style={styles.input} placeholder="First name" placeholderTextColor="#ffffff44" autoCapitalize="words" />
+          <Text style={styles.fieldLabel}>LAST NAME</Text>
+          <TextInput value={lastName} onChangeText={setLastName} style={styles.input} placeholder="Last name" placeholderTextColor="#ffffff44" autoCapitalize="words" /></>)}
         {/* Confirm password — visible uniquement au signup */}
         {!isLogin && (
           <><Text style={styles.fieldLabel}>CONFIRM PASSWORD</Text>
