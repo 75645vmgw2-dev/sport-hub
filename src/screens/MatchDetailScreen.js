@@ -392,7 +392,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
       const context = buildRealContext();
       const prompt = 'DONNÉES RÉELLES :\n' + context +
         '\nEn te basant UNIQUEMENT sur ces données, fournis les ' + tabName +
-        ' pour ' + match.home + ' vs ' + match.away + ' en ' + sportName + '. Answer in the user's language: ' + (language||'en') + ', sois concis.';
+        ' pour ' + match.home + ' vs ' + match.away + ' en ' + sportName + '. Answer in language: ' + (language||'en') + '. Be concise.';
       const text = await callAnthropic(prompt);
       setAiContent(text);
       setAiLoaded(true);
@@ -585,15 +585,15 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
         if (match.homeScore!==null && match.awayScore!==null) {
           prompt += '\nFinal score: ' + match.home + ' ' + match.homeScore + '-' + match.awayScore + ' ' + match.away + '\n';
         }
-        prompt += '\nAnalyze this result in 4-5 sentences. Key factors, notable performances, implications. Answer in the user's language: ' + (language||'en') + '.';
+        prompt += '\nAnalyze this result in 4-5 sentences. Key factors, notable performances, implications. Answer in language: ' + (language||'en') + '.';
       } else if (isLive) {
         prompt = 'REAL DATA - LIVE match :\n' + context;
         prompt += '\nCurrent score: ' + match.home + ' ' + match.homeScore + '-' + match.awayScore + ' ' + match.away + '\n';
-        prompt += '\nAnalyze this live match in 4-5 sentences. Who is dominating? Key factors? Answer in the user's language: ' + (language||'en') + '.';
+        prompt += '\nAnalyze this live match in 4-5 sentences. Who is dominating? Key factors? Answer in language: ' + (language||'en') + '.';
       } else {
         prompt = 'REAL DATA - upcoming match on ' + matchDate + ' :\n' + context;
         prompt += '\nEn te basant UNIQUEMENT sur ces données réelles (pas ta mémoire), fais une prédiction pour ' +
-          match.home + ' vs ' + match.away + '. Qui est favori ? Joueurs clés ? Score prédit ? 4-5 phrases en français.';
+          match.home + ' vs ' + match.away + '. Who is the favorite? Key players? Predicted score? 4-5 sentences. Answer in language: ' + (language||'en');
       }
       const text = await callAnthropic(prompt);
       setNews(text);
