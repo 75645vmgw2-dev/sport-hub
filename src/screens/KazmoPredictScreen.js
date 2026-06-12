@@ -7,7 +7,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { useLanguage } from '../i18n/LanguageContext';
-import { API_SPORTS_KEY } from '../api/config';
+import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 
 const H_NBA = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v2.nba.api-sports.io' };
 const H_FOOT = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' };
@@ -15,7 +15,7 @@ const H_TENNIS = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.tenn
 const H_MMA = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.mma.api-sports.io' };
 const H_F1 = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.formula-1.api-sports.io' };
 const H_GOLF = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.golf.api-sports.io' };
-const ANTHROPIC_KEY = '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';
+
 const H_ANTHROPIC = { 'Content-Type':'application/json', 'x-api-key':ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' };
 
 const STATUS_MESSAGES = {
@@ -70,11 +70,11 @@ const TEAMS_HARDCODED = {
   nfl:['Arizona Cardinals','Atlanta Falcons','Baltimore Ravens','Buffalo Bills','Carolina Panthers','Chicago Bears','Cincinnati Bengals','Cleveland Browns','Dallas Cowboys','Denver Broncos','Detroit Lions','Green Bay Packers','Houston Texans','Indianapolis Colts','Jacksonville Jaguars','Kansas City Chiefs','Las Vegas Raiders','Los Angeles Chargers','Los Angeles Rams','Miami Dolphins','Minnesota Vikings','New England Patriots','New Orleans Saints','New York Giants','New York Jets','Philadelphia Eagles','Pittsburgh Steelers','San Francisco 49ers','Seattle Seahawks','Tampa Bay Buccaneers','Tennessee Titans','Washington Commanders'],
   soccer_ligue1:['Paris Saint-Germain','Olympique de Marseille','AS Monaco','Stade Rennais','OSC Lille','Lyon','Nice','Lens','Strasbourg','Nantes','Toulouse','Montpellier','Reims','Brest','Le Havre'],
   soccer_pl:['Manchester City','Arsenal','Liverpool','Chelsea','Manchester United','Tottenham','Newcastle','Aston Villa','Brighton','West Ham','Wolves','Crystal Palace','Everton','Brentford','Fulham','Nottingham Forest','Bournemouth'],
-  soccer_laliga:['Real Madrid','FC Barcelone','Atlético Madrid','Real Sociedad','Athletic Bilbao','Villarreal','Betis','Valencia','Getafe','Rayo Vallecano','Osasuna','Girona','Celta Vigo','Sevilla','Almeria','Mallorca'],
-  soccer_bundesliga:['Bayern Munich','Borussia Dortmund','Bayer Leverkusen','RB Leipzig','Eintracht Frankfurt','Union Berlin','Freiburg','Wolfsburg','Borussia Mönchengladbach','Hoffenheim','Mainz','Augsburg','Werder Brême','Stuttgart','Köln','Heidenheim'],
+  soccer_laliga:['Real Madrid','FC Barcelona','Atletico Madrid','Real Sociedad','Athletic Bilbao','Villarreal','Betis','Valencia','Getafe','Rayo Vallecano','Osasuna','Girona','Celta Vigo','Sevilla','Almeria','Mallorca'],
+  soccer_bundesliga:['Bayern Munich','Borussia Dortmund','Bayer Leverkusen','RB Leipzig','Eintracht Frankfurt','Union Berlin','Freiburg','Wolfsburg','Borussia Monchengladbach','Hoffenheim','Mainz','Augsburg','Werder Bremen','Stuttgart','Köln','Heidenheim'],
   soccer_seriea:['Inter Milan','AC Milan','Juventus','Napoli','AS Roma','Lazio','Atalanta','Fiorentina','Torino','Bologna','Monza','Udinese','Lecce','Cagliari','Empoli','Hellas Verona','Genoa'],
-  soccer_ucl:['Real Madrid','Manchester City','Bayern Munich','Paris Saint-Germain','FC Barcelone','Liverpool','Chelsea','Juventus','Inter Milan','Atletico Madrid','Borussia Dortmund','Porto','Benfica','Ajax','AC Milan','Napoli'],
-  soccer_international:['France','Brésil','Argentine','Angleterre','Espagne','Allemagne','Portugal','Italie','Pays-Bas','Belgique','Croatie','Maroc','Sénégal','Japon','Uruguay','Colombie','États-Unis','Mexique','Canada','Afrique du Sud','Australie','Corée du Sud','Iran','Arabie Saoudite','Ghana','Tunisie','Nigeria','Cameroun','Égypte','Algérie','Costa Rica','Panama','Jamaïque','Honduras','Équateur','Pérou','Paraguay','Bolivie','Venezuela','Chili','Nouvelle-Zélande','Serbie','Suisse','Danemark','Autriche','Turquie','Ukraine','Pologne','Roumanie','République Tchèque','Slovaquie','Hongrie','Écosse','Irlande','Grèce','Islande','Suède','Norvège','Finlande'],
+  soccer_ucl:['Real Madrid','Manchester City','Bayern Munich','Paris Saint-Germain','FC Barcelona','Liverpool','Chelsea','Juventus','Inter Milan','Atletico Madrid','Borussia Dortmund','Porto','Benfica','Ajax','AC Milan','Napoli'],
+  soccer_international:['France','Brazil','Argentina','England','Spain','Germany','Portugal','Italy','Netherlands','Belgium','Croatia','Morocco','Senegal','Japan','Uruguay','Colombia','USA','Mexico','Canada','South Africa','Australia','South Korea','Iran','Saudi Arabia','Ghana','Tunisia','Nigeria','Cameroon','Egypt','Algeria','Costa Rica','Panama','Jamaica','Honduras','Ecuador','Peru','Paraguay','Bolivia','Venezuela','Chile','New Zealand','Serbia','Switzerland','Denmark','Austria','Turkey','Ukraine','Poland','Romania','Czech Republic','Slovakia','Hungary','Scotland','Ireland','Greece','Iceland','Sweden','Norway','Finland'],
 };
 
 const SOCCER_LEAGUES = [

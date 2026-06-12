@@ -1,3 +1,4 @@
+import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,10 +6,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 
 const H_TENNIS = {
-  'x-rapidapi-key': '7dd9989aa7mshb92a76c5f12079ap1647a6jsn59bbe08e126e',
+  'x-rapidapi-key': RAPIDAPI_GOLF_KEY,
   'x-rapidapi-host': 'tennisapi1.p.rapidapi.com'
 };
-const ANTHROPIC_KEY = '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';
+
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,

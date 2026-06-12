@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
-import { API_SPORTS_KEY } from '../api/config';
+import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import MatchDetailScreen from './MatchDetailScreen';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -12,7 +12,7 @@ const H_MLB = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.basebal
 const H_FOOT = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' };
 const H_MMA = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.mma.api-sports.io' };
 const H_F1 = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.formula-1.api-sports.io' };
-const H_GOLF = { 'x-rapidapi-key': '7dd9989aa7mshb92a76c5f12079ap1647a6jsn59bbe08e126e', 'x-rapidapi-host': 'live-golf-data.p.rapidapi.com' };
+const H_GOLF = { 'x-rapidapi-key': RAPIDAPI_GOLF_KEY, 'x-rapidapi-host': 'live-golf-data.p.rapidapi.com' };
 
 const FOOTBALL_LEAGUES = [1,2,3,39,40,45,61,62,66,78,79,81,135,136,140,141,143,253,848];
 const LANG_LOCALE = {

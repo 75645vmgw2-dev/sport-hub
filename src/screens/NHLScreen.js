@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
-import { API_SPORTS_KEY } from '../api/config';
+import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import { supabase } from '../api/supabase';
 import MatchDetailScreen from './MatchDetailScreen';
 import NHLTeamScreen from './NHLTeamScreen';

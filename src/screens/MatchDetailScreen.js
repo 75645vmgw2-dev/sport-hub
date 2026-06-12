@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { API_SPORTS_KEY } from '../api/config';
+import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 
 const TABS = [
   { id:'forme', label:'FORME' },
@@ -15,7 +15,7 @@ const H_NBA = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v2.nba.api
 const H_NHL = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.hockey.api-sports.io' };
 const H_MLB = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v1.baseball.api-sports.io' };
 const H_SOCCER = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' };
-const ANTHROPIC_KEY = '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';
+
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,
@@ -54,6 +54,101 @@ function PeriodSelector({ active, onSelect, color }) {
   );
 }
 
+const GOLF_STATUS_MESSAGES = {
+  fr: ['🔍 Recherche des données du tournoi...','📊 Analyse du leaderboard...','🏌️ Évaluation des performances...','🧠 Génération de la réponse...'],
+  en: ['🔍 Searching tournament data...','📊 Analyzing leaderboard...','🏌️ Evaluating performances...','🧠 Generating response...'],
+  es: ['🔍 Buscando datos del torneo...','📊 Analizando el leaderboard...','🏌️ Evaluando rendimientos...','🧠 Generando respuesta...'],
+  pt: ['🔍 Buscando dados do torneio...','📊 Analisando o leaderboard...','🏌️ Avaliando desempenhos...','🧠 Gerando resposta...'],
+  de: ['🔍 Turnierdaten suchen...','📊 Leaderboard analysieren...','🏌️ Leistungen bewerten...','🧠 Antwort generieren...'],
+  it: ['🔍 Ricerca dati torneo...','📊 Analisi leaderboard...','🏌️ Valutazione prestazioni...','🧠 Generazione risposta...'],
+  ar: ['🔍 البحث عن بيانات البطولة...','📊 تحليل لوحة المتصدرين...','🏌️ تقييم الأداء...','🧠 إنشاء الرد...'],
+  ru: ['🔍 Поиск данных турнира...','📊 Анализ лидерборда...','🏌️ Оценка выступлений...','🧠 Генерация ответа...'],
+};
+
+function GolfAssistant({ match, language }) {
+  const [question, setQuestion] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [result, setResult] = React.useState(null);
+  const [tab, setTab] = React.useState('short');
+  const [statusIdx, setStatusIdx] = React.useState(0);
+  const messages = GOLF_STATUS_MESSAGES[language] || GOLF_STATUS_MESSAGES['en'];
+
+  React.useEffect(function() {
+    if (!loading) { setStatusIdx(0); return; }
+    const iv = setInterval(function() { setStatusIdx(function(p) { return (p+1) % messages.length; }); }, 3000);
+    return () => clearInterval(iv);
+  }, [loading, language]);
+
+  async function ask() {
+    if (!question.trim()) return;
+    setLoading(true); setResult(null);
+    try {
+      const leaderboard = (match.players||[]).slice(0,10).map(function(p,i) {
+        return '#'+(i+1)+' '+p.name+' — '+( p.score||'E')+(p.thru?' (thru '+p.thru+')':'');
+      }).join('\n');
+      const prompt = 'You are Kazmo, golf expert AI.\nTournament: '+(match.tournamentName||match.home)+'\nCurrent leaderboard:\n'+leaderboard+'\n\nUser question: '+question+'\n\nReply ONLY valid JSON (no markdown):\n{"short":"2 sentences","medium":"5 sentences","long":"10 sentences"}\n\nAnswer in language: '+(language||'en');
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+        body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1000, messages:[{role:'user',content:prompt}] })
+      });
+      const data = await response.json();
+      const text = (data.content||[]).map(function(c){return c.text||'';}).join('');
+      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+      setResult(parsed);
+    } catch(e) { setResult({short:'Error: '+e.message, medium:'Error: '+e.message, long:'Error: '+e.message}); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <View style={styles.aiSection}>
+      <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={styles.aiBadge}>
+        <Text style={styles.aiBadgeText}>🤖 KAZMO ASSISTANT</Text>
+      </LinearGradient>
+      {!result && !loading && (
+        <View style={{gap:10,marginTop:8}}>
+          <TextInput
+            value={question} onChangeText={setQuestion}
+            style={[styles.aiText,{backgroundColor:'#0d0d1a',borderRadius:10,padding:12,borderWidth:1,borderColor:'#ffffff22',color:'#fff',minHeight:60}]}
+            placeholder={language==='fr'?'Pose ta question sur le tournoi...':'Ask your question about the tournament...'}
+            placeholderTextColor="#ffffff44" multiline
+          />
+          <TouchableOpacity onPress={ask} disabled={!question.trim()} style={{opacity:question.trim()?1:0.4}}>
+            <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:10,padding:12,alignItems:'center'}}>
+              <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1}}>🔮 ANALYSER</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      )}
+      {loading && (
+        <View style={{alignItems:'center',gap:12,marginTop:16}}>
+          <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:1}} style={{width:60,height:60,borderRadius:30,alignItems:'center',justifyContent:'center'}}>
+            <Text style={{color:'#fff',fontSize:32,fontWeight:'900'}}>K</Text>
+          </LinearGradient>
+          <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:13,letterSpacing:1,textAlign:'center'}}>{messages[statusIdx]}</Text>
+          <ActivityIndicator color="#FF6B2B" size="large"/>
+          <Text style={{color:'#ffffff33',fontSize:11,fontFamily:'BebasNeue',letterSpacing:1}}>⏱ UP TO 30 SECONDS</Text>
+        </View>
+      )}
+      {result && (
+        <View style={{marginTop:8}}>
+          <View style={{flexDirection:'row',backgroundColor:'#16162a',borderRadius:10,padding:4,gap:4,marginBottom:12}}>
+            {[{id:'short',label:'⚡ Short'},{id:'medium',label:'📊 Medium'},{id:'long',label:'🎓 Long'}].map(function(tb){
+              return(<TouchableOpacity key={tb.id} style={{flex:1,padding:8,borderRadius:8,alignItems:'center',backgroundColor:tab===tb.id?'#FF6B2B11':undefined}} onPress={()=>setTab(tb.id)}>
+                <Text style={{color:tab===tb.id?'#FF6B2B':'#ffffff55',fontFamily:'BebasNeue',fontSize:11}}>{tb.label}</Text>
+              </TouchableOpacity>);
+            })}
+          </View>
+          <Text style={styles.aiText}>{tab==='short'?result.short:tab==='medium'?result.medium:result.long}</Text>
+          <TouchableOpacity onPress={()=>{setResult(null);setQuestion('');}} style={[styles.refreshBtn,{marginTop:12}]}>
+            <Text style={styles.refreshText}>← New question</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+}
+
 function AISection({ content, loading, onRefresh }) {
   if (loading) {
     return (
@@ -77,6 +172,7 @@ function AISection({ content, loading, onRefresh }) {
 }
 
 export default function MatchDetailScreen({ match, sport, color, onBack }) {
+  const { language } = require('../i18n/LanguageContext').useLanguage();
   const [tab, setTab] = useState('forme');
   const [period, setPeriod] = useState(5);
   const [homeForm, setHomeForm] = useState([]);
@@ -702,7 +798,9 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
             <PeriodSelector active={period} onSelect={setPeriod} color={C} />
             {loadingForm ? (
               <View style={styles.loadingBox}><ActivityIndicator color="#FF6B2B" size="large" /></View>
-            ) : sport==='F1'||sport==='GOLF'||sport==='MMA'||sport==='TENNIS' ? (
+            ) : sport==='GOLF' ? (
+              <GolfAssistant match={match} language={language} />
+            ) : sport==='F1'||sport==='MMA'||sport==='TENNIS' ? (
               <AISection content={aiContent||''} loading={loadingAI}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />
             ) : (

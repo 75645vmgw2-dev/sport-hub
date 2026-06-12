@@ -73,6 +73,7 @@ export default function AuthScreen({ onLogin, onSignup }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingApple, setLoadingApple] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
@@ -92,6 +93,10 @@ export default function AuthScreen({ onLogin, onSignup }) {
   async function handleAuth() {
     if (!email || !password) {
       Alert.alert('', t('errorFill'));
+      return;
+    }
+    if (!isLogin && password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match.');
       return;
     }
     setLoading(true);
@@ -279,6 +284,10 @@ export default function AuthScreen({ onLogin, onSignup }) {
         <Text style={styles.fieldLabel}>{t('password')}</Text>
         <TextInput value={password} onChangeText={setPassword} style={styles.input} placeholder={t('password')} placeholderTextColor="#ffffff44" secureTextEntry />
 
+        {/* Confirm password — visible uniquement au signup */}
+        {!isLogin && (
+          <><Text style={styles.fieldLabel}>CONFIRM PASSWORD</Text>
+          <TextInput value={confirmPassword} onChangeText={setConfirmPassword} style={styles.input} placeholder="Confirm password" placeholderTextColor="#ffffff44" secureTextEntry /></>)}
         {/* Mot de passe oublié — visible uniquement en mode connexion */}
         {isLogin && (
           <TouchableOpacity onPress={() => setShowForgot(true)} style={styles.forgotBtn}>

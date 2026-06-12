@@ -6,9 +6,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../api/supabase';
-import { API_SPORTS_KEY } from '../api/config';
+import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 
-const ANTHROPIC_KEY = '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';
+
 const H_ANTHROPIC = {
   'Content-Type': 'application/json',
   'x-api-key': ANTHROPIC_KEY,
@@ -948,6 +948,8 @@ export default function AdminScreen({ onClose, adminUser }) {
   const [editingEvent, setEditingEvent] = useState(null);
   const [translating, setTranslating] = useState(false);
   const [newAdmin, setNewAdmin] = useState({ email:'', name:'', pin:'' });
+  const [showUserPickerAdmin, setShowUserPickerAdmin] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
   const [notifTitre, setNotifTitre] = useState('');
   const [notifCorps, setNotifCorps] = useState('');
   const [notifTranslating, setNotifTranslating] = useState(false);
@@ -958,11 +960,13 @@ export default function AdminScreen({ onClose, adminUser }) {
   const [notifSportFilter, setNotifSportFilter] = useState([]);
   const [filteredCount, setFilteredCount] = useState(0);
   const [notifDate, setNotifDate] = useState('');
+  const [flashSujet, setFlashSujet] = useState('');
+  const [flashGenerating, setFlashGenerating] = useState(false);
   const [notifHeure, setNotifHeure] = useState('');
   const [showNotifDatePicker, setShowNotifDatePicker] = useState(false);
   const [showNotifTimePicker, setShowNotifTimePicker] = useState(false);
 
-  const emptyForm = { sport:'', titre_fr:'', contenu_fr:'', date_debut:'', date_fin:'', actif:true, titre_en:'', titre_es:'', titre_pt:'', titre_de:'', titre_it:'', titre_ar:'', titre_ru:'', contenu_en:'', contenu_es:'', contenu_pt:'', contenu_de:'', contenu_it:'', contenu_ar:'', contenu_ru:'' };
+  const emptyForm = { sport:'', titre_fr:'', contenu_fr:'', date_debut:'', date_fin:'', actif:true, heure_debut_gmt:'00:00', heure_fin_gmt:'23:30', titre_en:'', titre_es:'', titre_pt:'', titre_de:'', titre_it:'', titre_ar:'', titre_ru:'', contenu_en:'', contenu_es:'', contenu_pt:'', contenu_de:'', contenu_it:'', contenu_ar:'', contenu_ru:'' };
   const emptyMatchForm = { sport:'', equipe_home:'', equipe_away:'', logo_home:'', logo_away:'', competition:'', date_affichage:'', date_match:'', description:'', actif:true, heure_debut_gmt:'00:00', heure_fin_gmt:'23:30' };
   const emptyEventForm = { nom:'', icon:'🎾', date_debut:'', date_fin:'', actif:true, description:'' };
   const [form, setForm] = useState(emptyForm);
@@ -1129,6 +1133,21 @@ export default function AdminScreen({ onClose, adminUser }) {
     ]);
   }
 
+  async function generateFlash() {
+    if (!flashSujet.trim()) return;
+    setFlashGenerating(true);
+    try {
+      const prompt = 'Tu es Kazmo, expert sportif. Genere un flash info sportif percutant sur ce sujet: ' + flashSujet + '\n\nReponds UNIQUEMENT en JSON valide sans markdown:\n{"titre_fr":"TITRE EN MAJUSCULES MAX 10 MOTS","contenu_fr":"Contenu percutant 2-3 phrases maximum"}';
+      const response = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:H_ANTHROPIC, body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:500, messages:[{ role:'user', content:prompt }] }) });
+      const data = await response.json();
+      const text = (data.content||[]).map(function(c){return c.text||'';}).join('');
+      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+      setForm(function(prev){ return {...prev, titre_fr:parsed.titre_fr||'', contenu_fr:parsed.contenu_fr||''}; });
+      Alert.alert('✅', 'Flash généré ! Vérifie et traduis.');
+    } catch(e) { Alert.alert('Erreur IA', e.message); }
+    finally { setFlashGenerating(false); }
+  }
+
   async function translateFlash() {
     if (!form.titre_fr || !form.contenu_fr) { Alert.alert('Attention', 'Remplis d\'abord le titre et le contenu en francais'); return; }
     setTranslating(true);
@@ -1182,6 +1201,13 @@ export default function AdminScreen({ onClose, adminUser }) {
 
   async function toggleFlash(flash) { await supabase.from('kazmo_flash').update({actif:!flash.actif}).eq('id',flash.id); fetchFlash(); }
   async function deleteFlash(id) { Alert.alert('Supprimer ?','Cette action est irreversible.',[{text:'Annuler',style:'cancel'},{text:'Supprimer',style:'destructive',onPress:async function(){ await supabase.from('kazmo_flash').delete().eq('id',id); fetchFlash(); }}]); }
+
+  async function loadAllUsers() {
+    try {
+      const { data } = await supabase.from('profiles').select('id, email, first_name, last_name').order('created_at', { ascending: false });
+      setAllUsers(data || []);
+    } catch(e) {}
+  }
 
   async function addAdmin() {
     if (!newAdmin.email||!newAdmin.name||!newAdmin.pin){Alert.alert('Erreur','Tous les champs sont obligatoires');return;}
@@ -1519,6 +1545,15 @@ export default function AdminScreen({ onClose, adminUser }) {
             <Text style={form.sport?styles.pickerBtnText:styles.pickerBtnPlaceholder}>{form.sport||'Choisir un sport...'}</Text>
             <Text style={styles.pickerArrow}>▼</Text>
           </TouchableOpacity>
+          <View style={{backgroundColor:'#FF6B2B11',borderRadius:12,padding:12,marginBottom:12,borderWidth:1,borderColor:'#FF6B2B33'}}>
+            <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:11,letterSpacing:1,marginBottom:8}}>🤖 GÉNÉRER AVEC KAZMO IA</Text>
+            <TextInput value={flashSujet} onChangeText={setFlashSujet} style={[styles.input,{marginBottom:8}]} placeholder="Ex: Coupe du Monde 2026 commence au Canada..." placeholderTextColor="#ffffff44" multiline/>
+            <TouchableOpacity onPress={generateFlash} disabled={flashGenerating||!flashSujet.trim()} activeOpacity={0.85}>
+              <LinearGradient colors={flashGenerating?['#444','#555']:['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={[styles.saveBtn,{padding:10}]}>
+                {flashGenerating?<><ActivityIndicator color="#fff" size="small"/><Text style={styles.saveBtnText}> Génération...</Text></>:<Text style={styles.saveBtnText}>⚡ GÉNÉRER</Text>}
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.fieldLabel}>Titre en francais *</Text>
           <TextInput value={form.titre_fr} onChangeText={function(v){setForm({...form,titre_fr:v});}} style={styles.input} placeholder="Ex: LA COUPE DU MONDE EST LANCEE" placeholderTextColor="#ffffff44" autoCapitalize="characters"/>
           <Text style={styles.fieldLabel}>Contenu en francais *</Text>
@@ -1567,6 +1602,12 @@ export default function AdminScreen({ onClose, adminUser }) {
             <TouchableOpacity onPress={()=>setShowAddAdmin(false)}><Text style={styles.formBack}>← Retour</Text></TouchableOpacity>
             <Text style={styles.formTitle}>Nouvel Admin</Text>
           </View>
+          <Text style={styles.fieldLabel}>Sélectionner un utilisateur</Text>
+          <TouchableOpacity style={[styles.input,styles.pickerBtn]} onPress={function(){loadAllUsers();setShowUserPickerAdmin(true);}}>
+            <Text style={newAdmin.email?styles.pickerBtnText:styles.pickerBtnPlaceholder}>{newAdmin.email||'Choisir depuis la liste users...'}</Text>
+            <Text style={styles.pickerArrow}>▼</Text>
+          </TouchableOpacity>
+          {newAdmin.email&&<View style={{backgroundColor:'#4CAF5011',borderRadius:8,padding:8,marginBottom:8,borderWidth:1,borderColor:'#4CAF5033'}}><Text style={{color:'#4CAF50',fontSize:11}}>✅ {newAdmin.name} — {newAdmin.email}</Text></View>}
           <Text style={styles.fieldLabel}>Nom complet</Text>
           <TextInput value={newAdmin.name} onChangeText={function(v){setNewAdmin({...newAdmin,name:v});}} style={styles.input} placeholder="Ex: Marie Dupont" placeholderTextColor="#ffffff44"/>
           <Text style={styles.fieldLabel}>Email</Text>
@@ -1737,6 +1778,8 @@ export default function AdminScreen({ onClose, adminUser }) {
       {showTeamPicker && (<TeamPicker sport={matchForm.sport} onSelect={function(name, logo){ if(showTeamPicker==='home'){setMatchForm(function(prev){return {...prev,equipe_home:name,logo_home:logo};});}else{setMatchForm(function(prev){return {...prev,equipe_away:name,logo_away:logo};});} }} onClose={() => setShowTeamPicker(null)} />)}
       {showTimePickerMatch==='debut'&&(<TimePicker title="Heure debut" value={matchForm.heure_debut_gmt} onSelect={function(h){setMatchForm(function(p){return {...p,heure_debut_gmt:h};});}} onClose={()=>setShowTimePickerMatch(null)}/>)}
       {showTimePickerMatch==='fin'&&(<TimePicker title="Heure fin" value={matchForm.heure_fin_gmt} onSelect={function(h){setMatchForm(function(p){return {...p,heure_fin_gmt:h};});}} onClose={()=>setShowTimePickerMatch(null)}/>)}
+      {showTimePickerMatch==='flash_debut'&&(<TimePicker title="Heure debut Flash" value={form.heure_debut_gmt} onSelect={function(h){setForm(function(p){return {...p,heure_debut_gmt:h};});}} onClose={()=>setShowTimePickerMatch(null)}/>)}
+      {showTimePickerMatch==='flash_fin'&&(<TimePicker title="Heure fin Flash" value={form.heure_fin_gmt} onSelect={function(h){setForm(function(p){return {...p,heure_fin_gmt:h};});}} onClose={()=>setShowTimePickerMatch(null)}/>)}
       {showDatePicker==='date_debut'&&<CalendarPicker field="date_debut" value={form.date_debut} onSelect={function(f,v){setForm(function(p){return{...p,[f]:v};});}} onClose={()=>setShowDatePicker(null)}/>}
       {showDatePicker==='date_fin'&&<CalendarPicker field="date_fin" value={form.date_fin} onSelect={function(f,v){setForm(function(p){return{...p,[f]:v};});}} onClose={()=>setShowDatePicker(null)}/>}
       {showDatePickerMatch==='date_affichage'&&<CalendarPicker field="date_affichage" value={matchForm.date_affichage} onSelect={function(f,v){setMatchForm(function(p){return{...p,[f]:v};});}} onClose={()=>setShowDatePickerMatch(null)}/>}
@@ -1746,6 +1789,31 @@ export default function AdminScreen({ onClose, adminUser }) {
       {showNotifDatePicker&&<CalendarPicker field="notif_date" value={notifDate} onSelect={function(f,v){setNotifDate(v);}} onClose={()=>setShowNotifDatePicker(null)}/>}
       {showNotifTimePicker&&<TimePicker title="Heure d'envoi" value={notifHeure} onSelect={setNotifHeure} onClose={()=>setShowNotifTimePicker(null)}/>}
 
+      {showUserPickerAdmin && (
+        <Modal visible animationType="slide" transparent>
+          <View style={styles.modalOverlay}><View style={styles.teamPickerContent}>
+            <Text style={styles.modalTitle}>Choisir un utilisateur</Text>
+            <ScrollView style={{maxHeight:400}}>
+              {allUsers.map(function(u,i) {
+                const name = [u.first_name,u.last_name].filter(Boolean).join(' ')||u.email||'Sans nom';
+                return(
+                  <TouchableOpacity key={i} style={styles.teamOption} onPress={function(){
+                    setNewAdmin({...newAdmin, email:u.email||'', name:name});
+                    setShowUserPickerAdmin(false);
+                  }}>
+                    <View style={styles.teamOptionLogoPlaceholder}><Text style={{fontSize:16}}>👤</Text></View>
+                    <View style={{flex:1}}>
+                      <Text style={styles.teamOptionText}>{name}</Text>
+                      <Text style={{color:'#ffffff44',fontSize:11}}>{u.email}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+            <TouchableOpacity onPress={()=>setShowUserPickerAdmin(false)} style={[styles.cancelBtn,{marginTop:8}]}><Text style={styles.cancelBtnText}>Annuler</Text></TouchableOpacity>
+          </View></View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }

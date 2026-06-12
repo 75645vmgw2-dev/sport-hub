@@ -240,9 +240,9 @@ export default function ProfileScreen({ user, onLogout }) {
             {/* ── SPORTS FAVORIS ── */}
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>🏆 MY FAVORITE SPORTS</Text>
+                <Text style={styles.cardTitle}>{t('favoriteSportsTitle')}</Text>
               </View>
-              <Text style={styles.sportsSubtitle}>Select your sports to receive personalized notifications. You can change your choices at any time.</Text>
+              <Text style={styles.sportsSubtitle}>{t('favoriteSportsSub')}</Text>
               <View style={styles.sportsGrid}>
                 {SPORTS_LIST.map(function(sport) {
                   const selected = favoriteSports.includes(sport.id);
@@ -261,7 +261,7 @@ export default function ProfileScreen({ user, onLogout }) {
               </View>
               <TouchableOpacity onPress={saveFavoriteSports} disabled={savingSports} activeOpacity={0.85} style={{marginTop:14}}>
                 <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={styles.saveBtn}>
-                  {savingSports ? <ActivityIndicator color="#fff" size="small"/> : <Text style={styles.saveBtnText}>💾 Save my sports</Text>}
+                  {savingSports ? <ActivityIndicator color="#fff" size="small"/> : <Text style={styles.saveBtnText}>{t('favoriteSportsSave')}</Text>}
                 </LinearGradient>
               </TouchableOpacity>
             </View>
