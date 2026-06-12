@@ -601,6 +601,20 @@ function UsersTab() {
     setSearch(s);
     fetchUsers(0, s);
   }
+  async function deleteUser(userId, email) {
+    Alert.alert('Supprimer ?', email + ' sera supprimé définitivement.', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Supprimer', style: 'destructive', onPress: async function() {
+        try {
+          await supabase.from('profiles').delete().eq('id', userId);
+          await supabase.from('push_tokens').delete().eq('user_id', userId);
+          setUsers(function(prev) { return prev.filter(function(u) { return u.id !== userId; }); });
+          setTotal(function(t) { return t - 1; });
+          Alert.alert('✅', 'Utilisateur supprimé.');
+        } catch(e) { Alert.alert('Erreur', e.message); }
+      }}
+    ]);
+  }
 
   return (
     <View style={{flex:1}}>
@@ -634,10 +648,11 @@ function UsersTab() {
                 </View>
                 <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
                   <Text style={{color:'#ffffff44',fontSize:10}}>📅 {date}</Text>
+                  <TouchableOpacity onPress={()=>deleteUser(u.id,u.email)} style={{backgroundColor:'#E5393522',borderRadius:8,paddingHorizontal:8,paddingVertical:4,borderWidth:1,borderColor:'#E5393544'}}>
+                    <Text style={{color:'#E53935',fontSize:11}}>🗑 Supprimer</Text>
+                  </TouchableOpacity>
                   <View style={{flexDirection:'row',gap:4,flexWrap:'wrap',justifyContent:'flex-end',flex:1,marginLeft:8}}>
-                    {u.sports.length > 0
-                      ? u.sports.map(function(s){return(<View key={s} style={{backgroundColor:'#FF6B2B22',borderRadius:6,paddingHorizontal:6,paddingVertical:2}}><Text style={{fontSize:11}}>{SPORT_ICONS[s]||s}</Text></View>);})
-                      : <Text style={{color:'#ffffff22',fontSize:10}}>Aucun sport</Text>}
+                    <Text style={{color:"#ffffff22",fontSize:10}}>—</Text>
                   </View>
                 </View>
               </View>
