@@ -270,14 +270,18 @@ export default function LiveScreen({ onSelectSport }) {
       });
     } catch(e) {}
 
-    // Football — SANS filtre de ligues pour afficher tous les matchs
+    // Football — today + tomorrow pour couvrir décalage UTC/Las Vegas
     try {
-      const res = await fetch('https://v3.football.api-sports.io/fixtures?date='+today, { headers:H_FOOT });
-      const data = await res.json();
+      const [r1, r2] = await Promise.all([
+        fetch('https://v3.football.api-sports.io/fixtures?date='+today, { headers:H_FOOT }),
+        fetch('https://v3.football.api-sports.io/fixtures?date='+tomorrow, { headers:H_FOOT }),
+      ]);
+      const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
+      const allFixtures = [...(d1.response||[]), ...(d2.response||[])];
       const liveStatuses = ['1H','2H','HT','ET','P','BT'];
       const finishedStatuses = ['FT','AET','PEN'];
       const seen = {};
-      (data.response||[]).forEach(function(f) {
+      allFixtures.forEach(function(f) {
         if (FOOTBALL_LEAGUES.indexOf(f.league.id) < 0) return; if (seen[f.fixture.id]) return; seen[f.fixture.id] = true;
         results.push({ id:'foot-'+f.fixture.id, sport:'FOOT', icon:'⚽', color:'#4CAF50', sportKey:'FOOTBALL', league:f.league.name, home:f.teams.home.name, homeLogo:f.teams.home.logo, away:f.teams.away.name, awayLogo:f.teams.away.logo, homeScore:f.goals.home, awayScore:f.goals.away, homeId:f.teams.home.id, awayId:f.teams.away.id, status:f.fixture.status.short, elapsed:f.fixture.status.elapsed||null, isLive:liveStatuses.indexOf(f.fixture.status.short)>=0, isFinished:finishedStatuses.indexOf(f.fixture.status.short)>=0, date:f.fixture.date, fixtureId:f.fixture.id });
       });

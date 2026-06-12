@@ -370,6 +370,11 @@ function ChatScreen({ t, language }) {
       </ScrollView>
 
       {/* Zone de saisie avec bouton micro */}
+      <View style={{backgroundColor:'#0d0d1a',paddingHorizontal:8,paddingTop:4,borderTopWidth:1,borderTopColor:'#ffffff11'}}>
+        <TouchableOpacity onPress={Keyboard.dismiss} style={{alignSelf:'flex-end',paddingHorizontal:10,paddingVertical:3,marginBottom:4}}>
+          <Text style={{color:'#ffffff44',fontSize:11,fontFamily:'BebasNeue',letterSpacing:1}}>⌨️ CLOSE</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.chatInputRow}>
         <MicButton onResult={function(text){ setInput(function(prev){ return prev + (prev ? ' ' : '') + text; }); }} language={language} />
         <TextInput value={input} onChangeText={setInput} style={styles.chatInput} placeholder={t('chatPlaceholder')} placeholderTextColor="#ffffff44" multiline maxLength={500} returnKeyType="send" onSubmitEditing={() => sendMessage()} blurOnSubmit={false} />

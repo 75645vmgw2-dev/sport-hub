@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const TABS = [
   { id:'forme', label:'FORME' },
@@ -176,7 +177,8 @@ function AISection({ content, loading, onRefresh }) {
 }
 
 export default function MatchDetailScreen({ match, sport, color, onBack }) {
-  const { language } = require('../i18n/LanguageContext').useLanguage();
+  const { language } = useLanguage();
+  
   const [tab, setTab] = useState('forme');
   const [period, setPeriod] = useState(5);
   const [homeForm, setHomeForm] = useState([]);
