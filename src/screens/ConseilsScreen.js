@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TextInput, Image, KeyboardAvoidingView, Platform, Keyboard, InputAccessoryView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TextInput, Image, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
@@ -325,19 +325,10 @@ function ChatScreen({ t, language }) {
     if (scrollRef.current) setTimeout(function(){scrollRef.current.scrollToEnd({animated:true});}, 100);
   }, [messages]);
 
-  const inputAccessoryViewID = 'chatInput';
 
   return (
     <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined} keyboardVerticalOffset={90}>
-      {Platform.OS === 'ios' && (
-        <InputAccessoryView nativeID={inputAccessoryViewID}>
-          <View style={styles.keyboardToolbar}>
-            <TouchableOpacity onPress={Keyboard.dismiss} style={styles.keyboardDismissBtn}>
-              <Text style={styles.keyboardDismissText}>Fermer ⌨️</Text>
-            </TouchableOpacity>
-          </View>
-        </InputAccessoryView>
-      )}
+
       <ScrollView ref={scrollRef} contentContainerStyle={styles.chatScroll} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         {messages.length <= 1 && (
           <View style={styles.quickQuestions}>
@@ -381,7 +372,7 @@ function ChatScreen({ t, language }) {
       {/* Zone de saisie avec bouton micro */}
       <View style={styles.chatInputRow}>
         <MicButton onResult={function(text){ setInput(function(prev){ return prev + (prev ? ' ' : '') + text; }); }} language={language} />
-        <TextInput value={input} onChangeText={setInput} style={styles.chatInput} placeholder={t('chatPlaceholder')} placeholderTextColor="#ffffff44" multiline maxLength={500} inputAccessoryViewID={inputAccessoryViewID} />
+        <TextInput value={input} onChangeText={setInput} style={styles.chatInput} placeholder={t('chatPlaceholder')} placeholderTextColor="#ffffff44" multiline maxLength={500} returnKeyType="send" onSubmitEditing={() => sendMessage()} blurOnSubmit={false} />
         <TouchableOpacity onPress={() => sendMessage()} disabled={loading || !input.trim()} style={styles.chatSendBtn}>
           <LinearGradient colors={loading||!input.trim()?['#333','#444']:['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={styles.chatSendBtnGradient}>
             <Text style={styles.chatSendBtnText}>→</Text>

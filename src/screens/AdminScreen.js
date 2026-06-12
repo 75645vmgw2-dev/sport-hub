@@ -1733,7 +1733,7 @@ export default function AdminScreen({ onClose, adminUser }) {
 
       {/* ── USERS ── */}
       {tab==='users' && (
-        <UsersScreen supabase={supabase} />
+        <UsersTab />
       )}
 
       {/* ── HISTORIQUE NOTIFICATIONS ── */}
