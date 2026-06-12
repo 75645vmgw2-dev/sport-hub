@@ -202,8 +202,8 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
 
   useEffect(() => {
     if (needsAI) {
-      // Pour le Golf et autres sports AI, charger dès l'onglet forme
-      if ((tab === 'forme' || tab === 'leaders' || tab === 'stats' || tab === 'compo') && !aiLoaded) fetchAIPlayers();
+      // Pour les sports AI (pas Golf qui a GolfAssistant), charger dès l'onglet forme
+      if (sport !== 'GOLF' && (tab === 'forme' || tab === 'leaders' || tab === 'stats' || tab === 'compo') && !aiLoaded) fetchAIPlayers();
     } else {
       if ((tab === 'leaders' || tab === 'stats' || tab === 'compo') && !playersLoaded) fetchPlayers();
     }
