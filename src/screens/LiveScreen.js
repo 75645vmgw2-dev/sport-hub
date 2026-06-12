@@ -235,8 +235,8 @@ export default function LiveScreen({ onSelectSport }) {
     // NBA — aujourd'hui + demain
     try {
       const [r1, r2] = await Promise.all([
-        fetch('https://v2.nba.api-sports.io/games?league=standard&season=2025&date='+today, { headers:H_NBA() }),
-        fetch('https://v2.nba.api-sports.io/games?league=standard&season=2025&date='+tomorrow, { headers:H_NBA() }),
+        fetch('https://v2.nba.api-sports.io/games?league=standard&season=2025&date='+today, { headers:H_NBA }),
+        fetch('https://v2.nba.api-sports.io/games?league=standard&season=2025&date='+tomorrow, { headers:H_NBA }),
       ]);
       const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
       const seen = {};
@@ -249,9 +249,9 @@ export default function LiveScreen({ onSelectSport }) {
     // NHL — hier + aujourd'hui + demain (finales peuvent être n'importe quel jour)
     try {
       const [r1, r2, r3] = await Promise.all([
-        fetch('https://v1.hockey.api-sports.io/games?league=57&season=2025&date='+yesterday, { headers:H_NHL() }),
-        fetch('https://v1.hockey.api-sports.io/games?league=57&season=2025&date='+today, { headers:H_NHL() }),
-        fetch('https://v1.hockey.api-sports.io/games?league=57&season=2025&date='+tomorrow, { headers:H_NHL() }),
+        fetch('https://v1.hockey.api-sports.io/games?league=57&season=2025&date='+yesterday, { headers:H_NHL }),
+        fetch('https://v1.hockey.api-sports.io/games?league=57&season=2025&date='+today, { headers:H_NHL }),
+        fetch('https://v1.hockey.api-sports.io/games?league=57&season=2025&date='+tomorrow, { headers:H_NHL }),
       ]);
       const [d1, d2, d3] = await Promise.all([r1.json(), r2.json(), r3.json()]);
       const seen = {};
@@ -263,7 +263,7 @@ export default function LiveScreen({ onSelectSport }) {
 
     // MLB — aujourd'hui seulement
     try {
-      const res = await fetch('https://v1.baseball.api-sports.io/games?league=1&season=2026&date='+today, { headers:H_MLB() });
+      const res = await fetch('https://v1.baseball.api-sports.io/games?league=1&season=2026&date='+today, { headers:H_MLB });
       const data = await res.json();
       (data.response||[]).forEach(function(g) {
         results.push({ id:'mlb-'+g.id, sport:'MLB', icon:'⚾', color:'#E53935', sportKey:'MLB', home:g.teams.home.name, homeLogo:g.teams.home.logo, away:g.teams.away.name, awayLogo:g.teams.away.logo, homeScore:g.scores.home.total, awayScore:g.scores.away.total, homeId:g.teams.home.id, awayId:g.teams.away.id, status:g.status.short, inning:g.status.inning||null, inningHalf:g.status.inning_hi||null, isLive:isMLBLive(g.status.short), isFinished:isMLBFinished(g.status.short, g.status.long), date:g.date });
@@ -272,7 +272,7 @@ export default function LiveScreen({ onSelectSport }) {
 
     // Football — SANS filtre de ligues pour afficher tous les matchs
     try {
-      const res = await fetch('https://v3.football.api-sports.io/fixtures?date='+today, { headers:H_FOOT() });
+      const res = await fetch('https://v3.football.api-sports.io/fixtures?date='+today, { headers:H_FOOT });
       const data = await res.json();
       const liveStatuses = ['1H','2H','HT','ET','P','BT'];
       const finishedStatuses = ['FT','AET','PEN'];
@@ -285,7 +285,7 @@ export default function LiveScreen({ onSelectSport }) {
 
     // MMA
     try {
-      const res = await fetch('https://v1.mma.api-sports.io/fights?date='+today, { headers:H_MMA() });
+      const res = await fetch('https://v1.mma.api-sports.io/fights?date='+today, { headers:H_MMA });
       const data = await res.json();
       (data.response||[]).forEach(function(f) {
         const isLive = f.status?.short==='LIVE';
@@ -361,7 +361,7 @@ export default function LiveScreen({ onSelectSport }) {
 
     // F1
     try {
-      const res = await fetch('https://v1.formula-1.api-sports.io/races?season=2026&type=Race', { headers:H_F1() });
+      const res = await fetch('https://v1.formula-1.api-sports.io/races?season=2026&type=Race', { headers:H_F1 });
       const data = await res.json();
       const todayRaces = (data.response||[]).filter(function(r) {
         if (!r.date) return false;
@@ -373,7 +373,7 @@ export default function LiveScreen({ onSelectSport }) {
         let topDrivers = [];
         if (isLive || isFinished) {
           try {
-            const lbRes = await fetch('https://v1.formula-1.api-sports.io/rankings/races?race='+r.id, { headers:H_F1() });
+            const lbRes = await fetch('https://v1.formula-1.api-sports.io/rankings/races?race='+r.id, { headers:H_F1 });
             const lbData = await lbRes.json();
             topDrivers = (lbData.response||[]).slice(0,5).map(function(d) {
               return { name: d.driver?.name||'', team: d.team?.name||'', gap: d.time?.behind||null };
