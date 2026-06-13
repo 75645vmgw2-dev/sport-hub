@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  TextInput, Alert, ActivityIndicator, Modal
+  TextInput, Alert, ActivityIndicator, Modal, Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -180,6 +180,7 @@ export default function ProfileScreen({ user, onLogout }) {
 
   if (showAdmin) return <AdminScreen onClose={()=>setShowAdmin(false)} adminUser={user} />;
   if (showFAQ) return <FAQScreen user={user} onBack={()=>setShowFAQ(false)} />;
+  if (showBets) return <BetsScreen user={user} onBack={()=>setShowBets(false)} />;
 
   return (
     <SafeAreaView style={styles.container}>

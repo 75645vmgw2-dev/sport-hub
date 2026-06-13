@@ -113,6 +113,8 @@ export default function AgendaScreen() {
   const [predictions, setPredictions] = useState({});
   const [loadingPredictions, setLoadingPredictions] = useState(false);
   const [predictionsTab, setPredictionsTab] = useState(false);
+  const [dynamicEvents, setDynamicEvents] = useState([]);
+  const [filtersReady, setFiltersReady] = useState(false);
 
   const locale = LANG_LOCALE[language] || 'en-US';
 
@@ -126,7 +128,7 @@ export default function AgendaScreen() {
 
   const SPORT_FILTERS = [
     { id:'all', icon:'🌐', labelKey:'all' },
-    ...(new Date() <= new Date('2026-07-19') ? [{ id:'wc', icon:'🌍', label:t('worldCup').split(' ')[0] }] : []),
+    ...dynamicEvents.map(function(e) { return { id:'event_'+e.id, icon:e.icon||'🏆', label:e.nom, leagueId:e.league_id, sport:e.sport, color:e.color||'#FF6B2B', isEvent:true }; }),
     { id:'nba', icon:'🏀', label:'NBA' },
     { id:'nhl', icon:'🏒', label:'NHL' },
     { id:'mlb', icon:'⚾', label:'MLB' },
@@ -137,7 +139,17 @@ export default function AgendaScreen() {
     { id:'mma', icon:'🤼', label:'MMA' },
   ];
 
-  useEffect(() => { fetchAllEvents(); }, []);
+  useEffect(() => { fetchAllEvents(); fetchDynamicEvents(); }, []);
+  async function fetchDynamicEvents() {
+    try {
+      const today = new Date().toISOString().slice(0,10);
+      const { data } = await supabase.from('kazmo_events')
+        .select('*').eq('actif', true)
+        .lte('date_debut', today).gte('date_fin', today);
+      setDynamicEvents(data || []);
+    } catch(e) {}
+    setFiltersReady(true);
+  }
 
   const now = new Date();
   const yesterday = new Date(now.getTime() - 86400000).toISOString().slice(0,10);
@@ -281,6 +293,11 @@ export default function AgendaScreen() {
     let base = allEvents;
     if (sportFilter !== 'all') {
       base = base.filter(function(e){
+        if (sportFilter.startsWith('event_')) {
+          const ev = dynamicEvents.find(function(de){ return 'event_'+de.id === sportFilter; });
+          if (!ev) return false;
+          return e.sport === ev.sport || (ev.league_id && e.leagueId === ev.league_id);
+        }
         if (sportFilter === 'wc') return e.sport === 'wc';
         if (sportFilter === 'foot') return e.sport === 'foot';
         return e.sport === sportFilter;
@@ -313,9 +330,11 @@ export default function AgendaScreen() {
         return;
       }
       // Récupérer les matchs à venir
-      const upcoming = getFilteredEvents().filter(function(e) { return !e.isFinished && !e.isLive; }).slice(0,15);
-      console.log('Predictions upcoming:', upcoming.length, 'tab:', tab);
-      if (upcoming.length === 0) { setLoadingPredictions(false); Alert.alert('Debug', 'No upcoming events found for tab: ' + tab); return; }
+      const upcomingAll = allEvents.filter(function(e) { return !e.isFinished && !e.isLive; });
+      const hours = tab==='24h'?24:72;
+      const limit = new Date(new Date().getTime()+hours*3600000);
+      const upcoming = upcomingAll.filter(function(e){ const d=new Date(e.date); return d>=new Date() && d<=limit; }).slice(0,15);
+      if (upcoming.length === 0) { setLoadingPredictions(false); Alert.alert('Info', 'No upcoming matches in this period'); return; }
       const matchList = upcoming.map(function(e, i) {
         return (i+1) + '. ' + e.home + ' vs ' + e.away + ' (' + e.sport + ')';
       }).join('\n');
@@ -411,11 +430,12 @@ export default function AgendaScreen() {
           {SPORT_FILTERS.map(function(f) {
             const active = sportFilter===f.id;
             const label = f.label || (f.id==='all' ? t('sports') : f.id);
-            const isWC = f.id === 'wc';
+            const isEvent = f.isEvent;
+            const eventColor = f.color || '#FF6B2B';
             return (
-              <TouchableOpacity key={f.id} style={[styles.filterBtn, active&&styles.filterBtnActive, isWC&&!active&&styles.filterBtnWC]} onPress={() => setSportFilter(f.id)}>
+              <TouchableOpacity key={f.id} style={[styles.filterBtn, active&&styles.filterBtnActive, isEvent&&!active&&{borderColor:eventColor+'66'}]} onPress={() => {setSportFilter(f.id);setPredictionsTab(false);}}>
                 <Text style={styles.filterIcon}>{f.icon}</Text>
-                <Text style={[styles.filterLabel, active&&styles.filterLabelActive, isWC&&!active&&{color:'#4CAF50'}]}>{label}</Text>
+                <Text style={[styles.filterLabel, active&&styles.filterLabelActive, isEvent&&!active&&{color:eventColor}]}>{label}</Text>
               </TouchableOpacity>
             );
           })}
