@@ -36,8 +36,8 @@ export default function NHLScreen({ onBack, user }) {
   const TABS = [
     { id:'finales', label:'🏆 ' + t('finals') },
     { id:'live', label:'🔴 Live' },
-    { id:'east', label:'Est' },
-    { id:'west', label:'Ouest' },
+    { id:'east', label:t('east') },
+    { id:'west', label:t('west') },
   ];
 
   useEffect(() => {

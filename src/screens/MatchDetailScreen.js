@@ -226,8 +226,12 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
 
   useEffect(() => {
     if (needsAI) {
-      // Pour les sports AI (pas Golf qui a GolfAssistant), charger dès l'onglet forme
-      if (sport !== 'GOLF' && (tab === 'forme' || tab === 'leaders' || tab === 'stats' || tab === 'compo') && !aiLoaded) fetchAIPlayers();
+      if (sport !== 'GOLF' && (tab === 'forme' || tab === 'leaders' || tab === 'stats' || tab === 'compo')) {
+        // Recharger le contenu IA pour chaque onglet
+        setAiLoaded(false);
+        setAiContent('');
+        fetchAIPlayers();
+      }
     } else {
       if ((tab === 'leaders' || tab === 'stats' || tab === 'compo') && !playersLoaded) fetchPlayers();
     }
@@ -626,7 +630,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
             return (
               <View key={i} style={[styles.formBadge,
                 {backgroundColor:g.win?'#4CAF5033':'#E5393533', borderColor:g.win?'#4CAF50':'#E53935'}]}>
-                <Text style={[styles.formBadgeText,{color:g.win?'#4CAF50':'#E53935'}]}>{g.win?'V':'D'}</Text>
+                <Text style={[styles.formBadgeText,{color:g.draw?'#FFD700':g.win?'#4CAF50':'#E53935'}]}>{g.draw?'N':g.win?'W':'L'}</Text>
               </View>
             );
           })}

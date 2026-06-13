@@ -6,6 +6,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { API_SPORTS_KEY, SEASONS, SEASON_LABELS } from '../api/config';
 import { supabase } from '../api/supabase';
 import MatchDetailScreen from './MatchDetailScreen';
+import { useLanguage } from '../i18n/LanguageContext';
 import SoccerTeamScreen from './SoccerTeamScreen';
 
 const H_FOOT = { 'x-rapidapi-key': API_SPORTS_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' };
@@ -22,65 +23,65 @@ function GradientText({ text, fontSize, letterSpacing }) {
 
 const FS = SEASONS.FOOTBALL;
 
-const COUNTRIES = [
-  {
-    id: 'europe', name: 'Competitions Europeennes', flag: '⭐', color: '#1a1aff',
-    leagues: [
-      { id:'ucl', name:'Champions League', leagueId:2, season:FS, color:'#1a1aff' },
-      { id:'uel', name:'Europa League', leagueId:3, season:FS, color:'#ff6600' },
-      { id:'uecl', name:'Conference League', leagueId:848, season:FS, color:'#00cc44' },
-    ]
-  },
-  {
-    id: 'england', name: 'Angleterre', flag: '🇬🇧', color: '#cc0000',
-    leagues: [
-      { id:'pl', name:'Premier League', leagueId:39, season:FS, color:'#3d195b' },
-      { id:'championship', name:'Championship', leagueId:40, season:FS, color:'#6a0dad' },
-      { id:'facup', name:'FA Cup', leagueId:45, season:FS, color:'#ff0000' },
-    ]
-  },
-  {
-    id: 'france', name: 'France', flag: '🇫🇷', color: '#003b8a',
-    leagues: [
-      { id:'ligue1', name:'Ligue 1', leagueId:61, season:FS, color:'#003b8a' },
-      { id:'ligue2', name:'Ligue 2', leagueId:62, season:FS, color:'#0055a4' },
-      { id:'coupefrance', name:'Coupe de France', leagueId:66, season:FS, color:'#002395' },
-    ]
-  },
-  {
-    id: 'spain', name: 'Espagne', flag: '🇪🇸', color: '#ee1f21',
-    leagues: [
-      { id:'laliga', name:'La Liga', leagueId:140, season:FS, color:'#ee1f21' },
-      { id:'segundadiv', name:'Segunda Division', leagueId:141, season:FS, color:'#c60b1e' },
-      { id:'copadelrey', name:'Copa del Rey', leagueId:143, season:FS, color:'#aa151b' },
-    ]
-  },
-  {
-    id: 'germany', name: 'Allemagne', flag: '🇩🇪', color: '#d4021d',
-    leagues: [
-      { id:'bundesliga', name:'Bundesliga', leagueId:78, season:FS, color:'#d4021d' },
-      { id:'bundesliga2', name:'2. Bundesliga', leagueId:79, season:FS, color:'#333333' },
-      { id:'dfbpokal', name:'DFB Pokal', leagueId:81, season:FS, color:'#333333' },
-    ]
-  },
-  {
-    id: 'italy', name: 'Italie', flag: '🇮🇹', color: '#1a56db',
-    leagues: [
-      { id:'seriea', name:'Serie A', leagueId:135, season:FS, color:'#1a56db' },
-      { id:'serieb', name:'Serie B', leagueId:136, season:FS, color:'#009246' },
-    ]
-  },
-  {
-    id: 'usa', name: 'USA', flag: '🇺🇸', color: '#002040',
-    leagues: [
-      { id:'mls', name:'MLS', leagueId:253, season:FS, color:'#002040' },
-    ]
-  },
-];
-
-const WC_LEAGUE = { id:'wc', name:'Coupe du Monde 2026', leagueId:1, season:2026, color:'#006341' };
-
 export default function SoccerScreen({ onBack, user }) {
+  const { t } = useLanguage();
+  const COUNTRIES = [
+    {
+      id: 'europe', name: t('europeanCompetitions'), flag: '⭐', color: '#1a1aff',
+      leagues: [
+        { id:'ucl', name:'Champions League', leagueId:2, season:FS, color:'#1a1aff' },
+        { id:'uel', name:'Europa League', leagueId:3, season:FS, color:'#ff6600' },
+        { id:'uecl', name:'Conference League', leagueId:848, season:FS, color:'#00cc44' },
+      ]
+    },
+    {
+      id: 'england', name: t('england'), flag: '🇬🇧', color: '#cc0000',
+      leagues: [
+        { id:'pl', name:'Premier League', leagueId:39, season:FS, color:'#3d195b' },
+        { id:'championship', name:'Championship', leagueId:40, season:FS, color:'#6a0dad' },
+        { id:'facup', name:'FA Cup', leagueId:45, season:FS, color:'#ff0000' },
+      ]
+    },
+    {
+      id: 'france', name: t('france'), flag: '🇫🇷', color: '#003b8a',
+      leagues: [
+        { id:'ligue1', name:'Ligue 1', leagueId:61, season:FS, color:'#003b8a' },
+        { id:'ligue2', name:'Ligue 2', leagueId:62, season:FS, color:'#0055a4' },
+        { id:'coupefrance', name:'Coupe de France', leagueId:66, season:FS, color:'#002395' },
+      ]
+    },
+    {
+      id: 'spain', name: t('spain'), flag: '🇪🇸', color: '#ee1f21',
+      leagues: [
+        { id:'laliga', name:'La Liga', leagueId:140, season:FS, color:'#ee1f21' },
+        { id:'segundadiv', name:'Segunda Division', leagueId:141, season:FS, color:'#c60b1e' },
+        { id:'copadelrey', name:'Copa del Rey', leagueId:143, season:FS, color:'#aa151b' },
+      ]
+    },
+    {
+      id: 'germany', name: t('germany'), flag: '🇩🇪', color: '#d4021d',
+      leagues: [
+        { id:'bundesliga', name:'Bundesliga', leagueId:78, season:FS, color:'#d4021d' },
+        { id:'bundesliga2', name:'2. Bundesliga', leagueId:79, season:FS, color:'#333333' },
+        { id:'dfbpokal', name:'DFB Pokal', leagueId:81, season:FS, color:'#333333' },
+      ]
+    },
+    {
+      id: 'italy', name: t('italy'), flag: '🇮🇹', color: '#1a56db',
+      leagues: [
+        { id:'seriea', name:'Serie A', leagueId:135, season:FS, color:'#1a56db' },
+        { id:'serieb', name:'Serie B', leagueId:136, season:FS, color:'#009246' },
+      ]
+    },
+    {
+      id: 'usa', name: t('usa'), flag: '🇺🇸', color: '#002040',
+      leagues: [
+        { id:'mls', name:'MLS', leagueId:253, season:FS, color:'#002040' },
+      ]
+    },
+  ];
+  
+  const WC_LEAGUE = { id:'wc', name:'Coupe du Monde 2026', leagueId:1, season:2026, color:'#006341' };
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
@@ -433,7 +434,7 @@ export default function SoccerScreen({ onBack, user }) {
           <View style={styles.wcBannerContent}>
             <Text style={styles.wcBannerIcon}>🌍</Text>
             <View>
-              <Text style={styles.wcBannerTitle}>COUPE DU MONDE 2026</Text>
+              <Text style={styles.wcBannerTitle}>{t('worldCup')}</Text>
               <Text style={styles.wcBannerSub}>USA · Canada · Mexique · 11 juin - 19 juillet</Text>
             </View>
             <Text style={styles.wcBannerArrow}>›</Text>
@@ -442,7 +443,7 @@ export default function SoccerScreen({ onBack, user }) {
       </TouchableOpacity>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionLabel}>PAYS ET COMPETITIONS</Text>
+        <Text style={styles.sectionLabel}>{t('countriesAndLeagues')}</Text>
         {COUNTRIES.map(function(country) {
           return (
             <TouchableOpacity key={country.id}
