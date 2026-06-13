@@ -126,7 +126,7 @@ export default function AgendaScreen() {
 
   const SPORT_FILTERS = [
     { id:'all', icon:'🌐', labelKey:'all' },
-    { id:'wc', icon:'🌍', label:t('worldCup').split(' ')[0] },
+    ...(new Date() <= new Date('2026-07-19') ? [{ id:'wc', icon:'🌍', label:t('worldCup').split(' ')[0] }] : []),
     { id:'nba', icon:'🏀', label:'NBA' },
     { id:'nhl', icon:'🏒', label:'NHL' },
     { id:'mlb', icon:'⚾', label:'MLB' },
@@ -314,7 +314,8 @@ export default function AgendaScreen() {
       }
       // Récupérer les matchs à venir
       const upcoming = getFilteredEvents().filter(function(e) { return !e.isFinished && !e.isLive; }).slice(0,15);
-      if (upcoming.length === 0) { setLoadingPredictions(false); return; }
+      console.log('Predictions upcoming:', upcoming.length, 'tab:', tab);
+      if (upcoming.length === 0) { setLoadingPredictions(false); Alert.alert('Debug', 'No upcoming events found for tab: ' + tab); return; }
       const matchList = upcoming.map(function(e, i) {
         return (i+1) + '. ' + e.home + ' vs ' + e.away + ' (' + e.sport + ')';
       }).join('\n');
@@ -558,11 +559,11 @@ const styles = StyleSheet.create({
   header: { padding:20, paddingBottom:8 },
   titleRow: { flexDirection:'row', alignItems:'center' },
   titleWhite: { fontSize:22, color:'#fff', fontFamily:'BebasNeue', letterSpacing:1 },
-  tabScrollView: { maxHeight:56, marginHorizontal:16, marginBottom:4 },
+  tabScrollView: { marginHorizontal:16, marginBottom:4 },
   tabBar: { flexDirection:'row', gap:6 },
   tabBtn: { paddingHorizontal:16, paddingVertical:8, borderRadius:10, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   tabBtnText: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:12, letterSpacing:0.5 },
-  filtersScroll: { maxHeight:56, marginHorizontal:16, marginBottom:8 },
+  filtersScroll: { marginHorizontal:16, marginBottom:8 },
   filtersRow: { flexDirection:'row', gap:6, paddingRight:16 },
   filterBtn: { flexDirection:'row', alignItems:'center', gap:4, paddingHorizontal:12, paddingVertical:7, borderRadius:20, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   filterBtnActive: { backgroundColor:'#FF6B2B', borderColor:'#FF6B2B' },

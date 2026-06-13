@@ -239,6 +239,17 @@ export default function ProfileScreen({ user, onLogout }) {
               )}
             </View>
 
+            {/* MES PARIS */}
+            <TouchableOpacity activeOpacity={0.85} onPress={()=>setShowBets(true)} style={{marginBottom:12}}>
+              <LinearGradient colors={['#FFD70022','#FF6B2B22']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:14,padding:14,flexDirection:'row',alignItems:'center',borderWidth:1,borderColor:'#FFD70044'}}>
+                <Text style={{fontSize:24,marginRight:12}}>📊</Text>
+                <View style={{flex:1}}>
+                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1}}>{t('myBets')}</Text>
+                  <Text style={{color:'#ffffff66',fontSize:11,marginTop:2}}>{t('myBetsSub')}</Text>
+                </View>
+                <Text style={{color:'#FFD700',fontSize:18}}>›</Text>
+              </LinearGradient>
+            </TouchableOpacity>
             {/* ── SPORTS FAVORIS ── */}
             <View style={styles.card}>
               <View style={styles.cardHeader}>
@@ -329,15 +340,16 @@ export default function ProfileScreen({ user, onLogout }) {
               </View>
             </View>
 
-            {/* MES PARIS */}
-            <TouchableOpacity activeOpacity={0.85} onPress={()=>setShowBets(true)} style={[styles.faqBtn,{borderColor:'#FFD70033',backgroundColor:'#FFD70008'}]}>
-              <Text style={styles.faqBtnIcon}>📊</Text>
-              <View style={{flex:1}}>
-                <Text style={styles.faqBtnText}>{t('myBets')}</Text>
-                <Text style={styles.faqBtnSub}>{t('myBetsSub')}</Text>
-              </View>
-              <Text style={styles.faqBtnArrow}>›</Text>
-            </TouchableOpacity>
+
+            {/* LEGAL */}
+            <View style={{flexDirection:'row',gap:8,marginBottom:8}}>
+              <TouchableOpacity onPress={()=>Linking.openURL('https://kazmo.app/privacy')} style={{flex:1,backgroundColor:'#ffffff08',borderRadius:10,padding:12,alignItems:'center',borderWidth:1,borderColor:'#ffffff11'}}>
+                <Text style={{color:'#ffffff55',fontSize:11,fontFamily:'BebasNeue',letterSpacing:1}}>🔒 Privacy Policy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={()=>Linking.openURL('https://kazmo.app/terms')} style={{flex:1,backgroundColor:'#ffffff08',borderRadius:10,padding:12,alignItems:'center',borderWidth:1,borderColor:'#ffffff11'}}>
+                <Text style={{color:'#ffffff55',fontSize:11,fontFamily:'BebasNeue',letterSpacing:1}}>📄 Terms of Use</Text>
+              </TouchableOpacity>
+            </View>
             {/* FAQ */}
             <TouchableOpacity activeOpacity={0.85} onPress={()=>setShowFAQ(true)} style={styles.faqBtn}>
               <Text style={styles.faqBtnIcon}>💬</Text>
