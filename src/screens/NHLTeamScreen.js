@@ -105,7 +105,7 @@ export default function NHLTeamScreen({ team, onBack }) {
 
   const TABS = [
     { id:'forme', label:'📊 Forme' },
-    { id:'prochains', label:'📅 Prochains' },
+    { id:'prochains', label:'📅 ' + t('next') },
     { id:'joueurs', label:'👥 Joueurs' },
     { id:'kazmo', label:'🤖 Kazmo' },
   ];

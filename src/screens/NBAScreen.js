@@ -384,7 +384,7 @@ export default function NBAScreen({ onBack, user }) {
                         {new Date(g.date.start).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}
                       </Text>
                       {isLive?<Text style={styles.liveLabel}>● LIVE {g.status.short}</Text>:null}
-                      {isFinished?<Text style={styles.finishedLabel}>✅ Terminé</Text>:null}
+                      {isFinished?<Text style={styles.finishedLabel}>✅ {t('finished')}</Text>:null}
                       {!isLive&&!isFinished?<Text style={styles.matchDateLabel}>
                         {new Date(g.date.start).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
                       </Text>:null}
@@ -433,7 +433,7 @@ export default function NBAScreen({ onBack, user }) {
                           <Text style={styles.liveQuarter}>{g.status.short}</Text>
                         </View>
                       )}
-                      {isFinished?<Text style={styles.finishedLabel}>✅ Terminé</Text>:null}
+                      {isFinished?<Text style={styles.finishedLabel}>✅ {t('finished')}</Text>:null}
                       {!isLive&&!isFinished && (
                         <Text style={styles.matchDateLabel}>
                           📅 {new Date(g.date.start).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
@@ -488,7 +488,7 @@ export default function NBAScreen({ onBack, user }) {
                         onPress={() => setSelectedMatch({match:buildMatchWNBA(g), sport:'NBA'})}>
                         <View style={styles.matchCardHeader}>
                           {isLive?<Text style={[styles.liveLabel,{color:WNBA_COLOR}]}>● LIVE {g.status?.short}</Text>:null}
-                          {isFinished?<Text style={styles.finishedLabel}>✅ Terminé</Text>:null}
+                          {isFinished?<Text style={styles.finishedLabel}>✅ {t('finished')}</Text>:null}
                           {!isLive&&!isFinished?<Text style={styles.matchDateLabel}>
                             {new Date(g.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
                           </Text>:null}

@@ -117,7 +117,7 @@ export default function NFLTeamScreen({ team, onBack }) {
       </View>
 
       <View style={styles.nextSeasonBanner}>
-        <Text style={styles.nextSeasonText}>🏈 Prochain kickoff — Septembre 2026</Text>
+        <Text style={styles.nextSeasonText}>🏈 Next kickoff — September 2026</Text>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScrollView}>

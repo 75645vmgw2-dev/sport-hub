@@ -111,7 +111,7 @@ export default function SoccerTeamScreen({ team, league, onBack }) {
 
   const TABS = [
     { id:'forme', label:'📊 Forme' },
-    { id:'prochains', label:'📅 Prochains' },
+    { id:'prochains', label:'📅 ' + t('next') },
     { id:'joueurs', label:'👥 Joueurs' },
     { id:'blesses', label:'🏥 Blesses' },
     { id:'kazmo', label:'🤖 Kazmo' },

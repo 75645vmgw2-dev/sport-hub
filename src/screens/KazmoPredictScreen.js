@@ -335,7 +335,7 @@ export default function KazmoPredictScreen({ onBack }) {
   const [showPicker1, setShowPicker1] = useState(false);
   const [showPicker2, setShowPicker2] = useState(false);
   const [soccerLeague, setSoccerLeague] = useState(null);
-  const [parlayBets, setParlayBets] = useState([{sport:null,team1:'',team2:'',date:new Date().toISOString().slice(0,10),surface:null,showP1:false,showP2:false}]);
+  const [parlayBets, setParlayBets] = useState([{sport:null,team1:'',team2:'',date:new Date().toISOString().slice(0,10),surface:null,league:null,showP1:false,showP2:false}]);
   const [pronoSport, setPronoSport] = useState(null);
   const [pronoQuestion, setPronoQuestion] = useState(null);
   const [pronoCustom, setPronoCustom] = useState('');
@@ -357,7 +357,7 @@ export default function KazmoPredictScreen({ onBack }) {
   ];
 
   function formatDate(d){if(!d)return t('predictNoDate');const now=new Date().toISOString().slice(0,10);const tom=new Date(Date.now()+86400000).toISOString().slice(0,10);if(d===now)return t('today');if(d===tom)return t('next');return new Date(d).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}
-  function addParlayBet(){if(parlayBets.length>=5)return;setParlayBets(function(p){return[...p,{sport:null,team1:'',team2:'',date:new Date().toISOString().slice(0,10),surface:null,showP1:false,showP2:false}];});}
+  function addParlayBet(){if(parlayBets.length>=5)return;setParlayBets(function(p){return[...p,{sport:null,team1:'',team2:'',date:new Date().toISOString().slice(0,10),surface:null,league:null,showP1:false,showP2:false}];});}
   function removeParlayBet(i){setParlayBets(function(p){return p.filter(function(_,x){return x!==i;});});}
   function updateParlayBet(i,k,v){setParlayBets(function(p){return p.map(function(b,x){if(x!==i)return b;return Object.assign({},b,{[k]:v});});});}
 
@@ -413,7 +413,7 @@ export default function KazmoPredictScreen({ onBack }) {
     finally{setLoading(false);}
   }
 
-  function reset(){setMode(null);setResult(null);setSimpleSport(null);setSimpleTeam1('');setSimpleTeam2('');setSimpleDate(new Date().toISOString().slice(0,10));setSimpleSurface(null);setSoccerLeague(null);setParlayBets([{sport:null,team1:'',team2:'',date:new Date().toISOString().slice(0,10),surface:null,showP1:false,showP2:false}]);setPronoSport(null);setPronoQuestion(null);setPronoCustom('');setAnalysisTab('rapide');}
+  function reset(){setMode(null);setResult(null);setSimpleSport(null);setSimpleTeam1('');setSimpleTeam2('');setSimpleDate(new Date().toISOString().slice(0,10));setSimpleSurface(null);setSoccerLeague(null);setParlayBets([{sport:null,team1:'',team2:'',date:new Date().toISOString().slice(0,10),surface:null,league:null,showP1:false,showP2:false}]);setPronoSport(null);setPronoQuestion(null);setPronoCustom('');setAnalysisTab('rapide');}
 
   if(result){
     if(result.error){return(<SafeAreaView style={styles.container}><View style={styles.header}><TouchableOpacity onPress={reset}><Text style={styles.backBtnText}>←</Text></TouchableOpacity><GradientText text={t('kazmoPredict')} fontSize={22} letterSpacing={1}/></View><View style={styles.center}><Text style={{fontSize:40,marginBottom:12}}>😕</Text><Text style={styles.errorText}>{result.error}</Text><TouchableOpacity onPress={reset} style={styles.resetBtn}><Text style={styles.resetBtnText}>↻ Réessayer</Text></TouchableOpacity></View></SafeAreaView>);}
@@ -503,7 +503,7 @@ export default function KazmoPredictScreen({ onBack }) {
             <TouchableOpacity onPress={analyzeSimple} disabled={!canAnalyze} activeOpacity={0.85} style={{marginTop:16}}><LinearGradient colors={canAnalyze?['#FF6B2B','#FFD600']:['#444','#555']} start={{x:0,y:0}} end={{x:1,y:0}} style={styles.analyzeBtn}><Text style={styles.analyzeBtnText}>🔮 ANALYSER</Text></LinearGradient></TouchableOpacity>
           </>)}
         </ScrollView>
-        {showPicker1&&simpleSport&&(<TeamPickerModal sport={simpleSport} title={isSolo?'Pilote / Joueur':l1} onSelect={setSimpleTeam1} onClose={()=>setShowPicker1(false)} t={t} initialLeague={soccerLeague} onLeagueSelected={setSoccerLeague}/>)}
+        {showPicker1&&simpleSport&&(<TeamPickerModal key='picker1' sport={simpleSport} title={isSolo?'Pilote / Joueur':l1} onSelect={function(name,league){setSimpleTeam1(name);if(league)setSoccerLeague(league);setShowPicker1(false);}} onClose={()=>setShowPicker1(false)} t={t} initialLeague={soccerLeague} onLeagueSelected={setSoccerLeague}/>)}
         {showPicker2&&simpleSport&&!isSolo&&(<TeamPickerModal sport={simpleSport} title={l2} onSelect={setSimpleTeam2} onClose={()=>setShowPicker2(false)} t={t} initialLeague={soccerLeague} onLeagueSelected={setSoccerLeague}/>)}
       </SafeAreaView>
     );
@@ -533,8 +533,8 @@ export default function KazmoPredictScreen({ onBack }) {
                   {bet.team2?<TouchableOpacity onPress={()=>updateParlayBet(index,'team2','')} style={styles.clearBtn}><Text style={styles.clearBtnText}>✕</Text></TouchableOpacity>:null}
                 </View>)}
               </>)}
-              {bet.showP1&&bet.sport&&(<TeamPickerModal sport={bet.sport} title={isSolo?'Pilote/Joueur':isInd?'Joueur 1':'Équipe 1'} onSelect={function(n){updateParlayBet(index,'team1',n);}} onClose={()=>updateParlayBet(index,'showP1',false)} t={t}/>)}
-              {bet.showP2&&bet.sport&&!isSolo&&(<TeamPickerModal sport={bet.sport} title={isInd?'Joueur 2':'Équipe 2'} onSelect={function(n){updateParlayBet(index,'team2',n);}} onClose={()=>updateParlayBet(index,'showP2',false)} t={t}/>)}
+              {bet.showP1&&bet.sport&&(<TeamPickerModal key={'parlay-p1-'+index+(bet.league?bet.league.key:'')} sport={bet.sport} title={isSolo?'Pilote/Joueur':isInd?'Joueur 1':'Équipe 1'} onSelect={function(n,league){updateParlayBet(index,'team1',n);if(league)updateParlayBet(index,'league',league);updateParlayBet(index,'showP1',false);}} onClose={()=>updateParlayBet(index,'showP1',false)} t={t} initialLeague={bet.league||null} onLeagueSelected={function(l){updateParlayBet(index,'league',l);}}/>)}
+              {bet.showP2&&bet.sport&&!isSolo&&(<TeamPickerModal key={'parlay-p2-'+index+(bet.league?bet.league.key:'')} sport={bet.sport} title={isInd?'Joueur 2':'Équipe 2'} onSelect={function(n,league){updateParlayBet(index,'team2',n);if(league)updateParlayBet(index,'league',league);updateParlayBet(index,'showP2',false);}} onClose={()=>updateParlayBet(index,'showP2',false)} t={t} initialLeague={bet.league||null} onLeagueSelected={function(l){updateParlayBet(index,'league',l);}}/>)}
             </View>);
           })}
           {parlayBets.length<5&&(<TouchableOpacity onPress={addParlayBet} style={styles.addBetBtn}><Text style={styles.addBetBtnText}>+ AJOUTER UN MATCH</Text></TouchableOpacity>)}

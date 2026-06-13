@@ -125,7 +125,7 @@ export default function NFLScreen({ onBack, user }) {
           <GradientText text="2025" fontSize={22} letterSpacing={1} />
         </View>
         <View style={styles.nextSeason}>
-          <Text style={styles.nextSeasonText}>🏈 Prochain kickoff — Septembre 2026</Text>
+          <Text style={styles.nextSeasonText}>🏈 Next kickoff — September 2026</Text>
         </View>
       </View>
 

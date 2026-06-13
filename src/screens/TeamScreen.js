@@ -521,7 +521,7 @@ export default function TeamScreen({ favorite, onBack }) {
 
   const TABS = [
     { id:'recent', label:'📊 Forme' },
-    { id:'upcoming', label:'📅 Prochains' },
+    { id:'upcoming', label:'📅 ' + t('next') },
     { id:'players', label:'👥 Joueurs' },
     { id:'kazmo', label:'🤖 Kazmo' },
   ];

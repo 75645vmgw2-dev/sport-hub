@@ -189,7 +189,7 @@ function GolfPlayerScreen({ player, schedule, onBack }) {
       const recentStr = recentTournaments.filter(function(t){return t.played;}).slice(0,5).map(function(t){
         return t.name+': #'+t.position+' ('+t.score+')';
       }).join('\n');
-      const prompt = 'Tu es Kazmo, assistant IA sportif premium.\nAnalyse le golfeur : '+player.name+'\n\nStats:\n- Classement mondial: #'+player.rank+'\n- Points: '+(player.points?Number(player.points).toFixed(2):'?')+'\n\nRésultats récents:\n'+(recentStr||'Non disponible')+'\n\nFais une analyse complète : style de jeu, points forts, majeurs gagnés, forme actuelle, perspectives. Réponds en français.';
+      const prompt = 'Tu es Kazmo, assistant IA sportif premium.\nAnalyse le golfeur : '+player.name+'\n\nStats:\n- Classement mondial: #'+player.rank+'\n- Points: '+(player.points?Number(player.points).toFixed(2):'?')+'\n\nRésultats récents:\n'+(recentStr||'Non disponible')+'\n\nFais une analyse complète : style de jeu, points forts, majeurs gagnés, forme actuelle, perspectives. Answer in language: ' + (language||'en') + '.';
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST', headers:H_ANTHROPIC,
         body:JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:800, messages:[{role:'user',content:prompt}] }),

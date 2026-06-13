@@ -110,6 +110,9 @@ export default function AgendaScreen() {
   const [selectedSport, setSelectedSport] = useState(null);
   const [tab, setTab] = useState('7j');
   const [sportFilter, setSportFilter] = useState('all');
+  const [predictions, setPredictions] = useState({});
+  const [loadingPredictions, setLoadingPredictions] = useState(false);
+  const [predictionsTab, setPredictionsTab] = useState(false);
 
   const locale = LANG_LOCALE[language] || 'en-US';
 
@@ -296,6 +299,45 @@ export default function AgendaScreen() {
     });
   }
 
+  async function fetchPredictions() {
+    if (tab !== '24h' && tab !== '72h') return;
+    setLoadingPredictions(true);
+    try {
+      // Vérifier le cache Supabase (6h max)
+      const cacheKey = tab + '_' + new Date().toISOString().slice(0,13);
+      const { data: cached } = await supabase.from('agenda_predictions_cache')
+        .select('predictions, created_at').eq('period', cacheKey).single();
+      if (cached && (new Date() - new Date(cached.created_at)) < 6*3600000) {
+        setPredictions(cached.predictions);
+        setLoadingPredictions(false);
+        return;
+      }
+      // Récupérer les matchs à venir
+      const upcoming = filteredEvents().filter(function(e) { return !e.isFinished && !e.isLive; }).slice(0,15);
+      if (upcoming.length === 0) { setLoadingPredictions(false); return; }
+      const matchList = upcoming.map(function(e, i) {
+        return (i+1) + '. ' + e.home + ' vs ' + e.away + ' (' + e.sport + ')';
+      }).join('\n');
+      const prompt = 'You are Kazmo, sports AI. For each match below, give a quick win probability estimate based on team names and sport only. Be concise.\n\nMatches:\n' + matchList + '\n\nReply ONLY with valid JSON (no markdown):\n{"predictions":[{"home_pct":65,"away_pct":35,"draw_pct":0},...]}}\n\nOne object per match in the same order. Percentages must sum to 100. No draw for NBA/NHL/F1/MMA/Golf (set draw_pct to 0).';
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:1000, messages:[{ role:'user', content:prompt }] })
+      });
+      const data = await response.json();
+      const text = (data.content||[]).map(function(c){return c.text||'';}).join('');
+      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+      const predsMap = {};
+      (parsed.predictions||[]).forEach(function(p, i) {
+        if (upcoming[i]) predsMap[upcoming[i].id] = p;
+      });
+      setPredictions(predsMap);
+      // Sauvegarder dans le cache
+      await supabase.from('agenda_predictions_cache').upsert({ period: cacheKey, predictions: predsMap, created_at: new Date().toISOString() }, { onConflict: 'period' });
+    } catch(e) { console.error(e); }
+    setLoadingPredictions(false);
+  }
+
   function buildMatch(e) {
     return { id:e.fixtureId||e.id, home:e.home, homeLogo:e.homeLogo, away:e.away, awayLogo:e.awayLogo, homeId:e.homeId, awayId:e.awayId, homeScore:e.homeScore, awayScore:e.awayScore, isLive:e.isLive, isFinished:e.isFinished, status:e.status, date:e.date, fixtureId:e.fixtureId };
   }
@@ -350,11 +392,16 @@ export default function AgendaScreen() {
         <View style={styles.tabBar}>
           {TABS.map(function(tb) {
             return (
-              <TouchableOpacity key={tb.id} style={[styles.tabBtn, tab===tb.id&&{backgroundColor:'#FF6B2B'}]} onPress={() => setTab(tb.id)}>
-                <Text style={[styles.tabBtnText, tab===tb.id&&{color:'#fff'}]}>{tb.label}</Text>
+              <TouchableOpacity key={tb.id} style={[styles.tabBtn, tab===tb.id&&!predictionsTab&&{backgroundColor:'#FF6B2B'}]} onPress={() => {setTab(tb.id);setPredictionsTab(false);}}>
+                <Text style={[styles.tabBtnText, tab===tb.id&&!predictionsTab&&{color:'#fff'}]}>{tb.label}</Text>
               </TouchableOpacity>
             );
           })}
+          {(tab==='24h'||tab==='72h') && (
+            <TouchableOpacity style={[styles.tabBtn, predictionsTab&&{backgroundColor:'#9C27B0'}]} onPress={() => {setPredictionsTab(true);}}>
+              <Text style={[styles.tabBtnText, predictionsTab&&{color:'#fff'}]}>🔮 Predict</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 
@@ -374,7 +421,56 @@ export default function AgendaScreen() {
         </View>
       </ScrollView>
 
-      {loading ? (
+      {predictionsTab && (tab==='24h'||tab==='72h') ? (
+        <ScrollView contentContainerStyle={{padding:16,paddingBottom:40}}>
+          <View style={{backgroundColor:'#9C27B011',borderRadius:12,padding:12,marginBottom:16,borderWidth:1,borderColor:'#9C27B033'}}>
+            <Text style={{color:'#CE93D8',fontFamily:'BebasNeue',fontSize:11,letterSpacing:1,marginBottom:4}}>⚡ KAZMO AI ESTIMATES</Text>
+            <Text style={{color:'#ffffff66',fontSize:11,lineHeight:16}}>Quick predictions based on team data. For deeper analysis, use Kazmo Predict.</Text>
+            {!loadingPredictions && Object.keys(predictions).length === 0 && (
+              <TouchableOpacity onPress={fetchPredictions} activeOpacity={0.85} style={{marginTop:10}}>
+                <LinearGradient colors={['#7B1FA2','#CE93D8']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:10,padding:12,alignItems:'center'}}>
+                  <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1}}>🔮 GENERATE PREDICTIONS</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
+            {loadingPredictions && (
+              <View style={{alignItems:'center',padding:12}}>
+                <ActivityIndicator color="#CE93D8" size="small"/>
+                <Text style={{color:'#CE93D8',fontSize:11,marginTop:6,fontFamily:'BebasNeue',letterSpacing:1}}>KAZMO IS ANALYZING...</Text>
+              </View>
+            )}
+          </View>
+          {filteredEvents().filter(function(e){return !e.isFinished&&!e.isLive;}).map(function(e,i){
+            const pred = predictions[e.id];
+            const d = new Date(e.date);
+            const timeStr = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            return (
+              <View key={e.id||i} style={{backgroundColor:'#16162a',borderRadius:12,padding:12,marginBottom:8,borderWidth:1,borderColor:'#ffffff14'}}>
+                <Text style={{color:'#ffffff55',fontSize:10,marginBottom:6}}>{e.sport} · {timeStr}</Text>
+                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+                  <Text style={{color:'#fff',fontSize:13,flex:1}} numberOfLines={1}>{e.home}</Text>
+                  {pred ? <Text style={{color:'#4CAF50',fontFamily:'BebasNeue',fontSize:16,marginHorizontal:8}}>{pred.home_pct}%</Text> : <Text style={{color:'#ffffff22',fontSize:12,marginHorizontal:8}}>—</Text>}
+                </View>
+                {pred && pred.draw_pct > 0 && <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:11,textAlign:'center',marginVertical:2}}>DRAW {pred.draw_pct}%</Text>}
+                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginTop:4}}>
+                  <Text style={{color:'#ffffffcc',fontSize:13,flex:1}} numberOfLines={1}>{e.away}</Text>
+                  {pred ? <Text style={{color:'#E53935',fontFamily:'BebasNeue',fontSize:16,marginHorizontal:8}}>{pred.away_pct}%</Text> : <Text style={{color:'#ffffff22',fontSize:12,marginHorizontal:8}}>—</Text>}
+                </View>
+                {pred && (
+                  <View style={{marginTop:8,height:4,backgroundColor:'#ffffff11',borderRadius:2,overflow:'hidden'}}>
+                    <View style={{width:pred.home_pct+'%',height:'100%',backgroundColor:'#4CAF50',borderRadius:2}}/>
+                  </View>
+                )}
+              </View>
+            );
+          })}
+          {Object.keys(predictions).length > 0 && (
+            <TouchableOpacity onPress={fetchPredictions} style={{marginTop:8,alignItems:'center',padding:10}}>
+              <Text style={{color:'#9C27B0',fontSize:12,fontFamily:'BebasNeue',letterSpacing:1}}>↻ REFRESH PREDICTIONS</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      ) : loading ? (
         <View style={styles.center}>
           <ActivityIndicator color="#FF6B2B" size="large" />
           <Text style={styles.loadingText}>{t('loading')}</Text>
