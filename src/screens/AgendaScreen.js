@@ -322,9 +322,13 @@ export default function AgendaScreen() {
     try {
       // Vérifier le cache Supabase (6h max)
       const cacheKey = predTab + '_' + new Date().toISOString().slice(0,13);
-      const { data: cached } = await supabase.from('agenda_predictions_cache')
-        .select('predictions, created_at').eq('period', cacheKey).single();
-      if (cached && (new Date() - new Date(cached.created_at)) < 6*3600000) {
+      let cached = null;
+      try {
+        const { data: c } = await supabase.from('agenda_predictions_cache')
+          .select('predictions, created_at').eq('period', cacheKey).single();
+        if (c && (new Date() - new Date(c.created_at)) < 6*3600000) cached = c;
+      } catch(cacheErr) {}
+      if (cached) {
         setPredictions(cached.predictions);
         setLoadingPredictions(false);
         return;
@@ -425,7 +429,7 @@ export default function AgendaScreen() {
         </View>
       </ScrollView>
 
-      {filtersReady && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
         <View style={styles.filtersRow}>
           {SPORT_FILTERS.map(function(f) {
             const active = sportFilter===f.id;
@@ -440,7 +444,7 @@ export default function AgendaScreen() {
             );
           })}
         </View>
-      </ScrollView>}
+      </ScrollView>
 
       {predictionsTab && (tab==='24h'||tab==='72h') ? (
         <ScrollView contentContainerStyle={{padding:16,paddingBottom:40}}>
@@ -583,7 +587,7 @@ const styles = StyleSheet.create({
   tabBar: { flexDirection:'row', gap:6 },
   tabBtn: { paddingHorizontal:16, paddingVertical:8, borderRadius:10, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   tabBtnText: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:12, letterSpacing:0.5 },
-  filtersScroll: { marginHorizontal:16, marginBottom:8 },
+  filtersScroll: { marginHorizontal:16, marginBottom:8, overflow:'visible' },
   filtersRow: { flexDirection:'row', gap:6, paddingRight:16 },
   filterBtn: { flexDirection:'row', alignItems:'center', gap:4, paddingHorizontal:12, paddingVertical:7, borderRadius:20, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   filterBtnActive: { backgroundColor:'#FF6B2B', borderColor:'#FF6B2B' },

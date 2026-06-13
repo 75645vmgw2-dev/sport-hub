@@ -25,7 +25,8 @@ const FS = SEASONS.FOOTBALL;
 
 export default function SoccerScreen({ onBack, user, initialLeague }) {
   const { t } = useLanguage();
-  const [selectedCountry, setSelectedCountry] = useState(initialLeague||null);
+  const WC_COUNTRY = initialLeague === 'wc' ? { id:'wc', name:'FIFA World Cup 2026', flag:'🌍', color:'#006341', leagues:[{ id:'wc2026', name:'FIFA World Cup 2026', leagueId:1, season:2026, color:'#006341' }] } : null;
+  const [selectedCountry, setSelectedCountry] = useState(WC_COUNTRY);
   const COUNTRIES = [
     {
       id: 'europe', name: t('europeanCompetitions'), flag: '⭐', color: '#1a1aff',

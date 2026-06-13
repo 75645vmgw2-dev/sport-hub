@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, ActivityIndicator, Share } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, ActivityIndicator, Share, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../api/supabase';
@@ -27,6 +28,7 @@ export default function BetsScreen({ user, onBack }) {
   const [showForm, setShowForm] = useState(false);
   const [editingBet, setEditingBet] = useState(null);
   const [filterResult, setFilterResult] = useState('all');
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const emptyLeg = { match_home:'', match_away:'', sport:'Football', odds:'', odds_format:'decimal' };
   const emptyForm = { sport:'Football', match_home:'', match_away:'', bet_type:'Simple', bookmaker:'', odds:'', odds_format:'decimal', stake:'', currency:'USD', result:'pending', notes:'', match_date:new Date().toISOString().slice(0,10), legs:[{...emptyLeg}] };
   const [form, setForm] = useState(emptyForm);
@@ -135,7 +137,7 @@ export default function BetsScreen({ user, onBack }) {
           <TouchableOpacity onPress={()=>setForm({...form,odds_format:'american'})} style={[styles.chip,form.odds_format==='american'&&styles.chipActive]}><Text style={[styles.chipText,form.odds_format==='american'&&{color:'#fff'}]}>American (+150)</Text></TouchableOpacity>
         </View>
         <Text style={styles.label}>Odds *</Text>
-        <TextInput value={form.odds} onChangeText={v=>setForm({...form,odds:v})} style={styles.input} placeholder={form.odds_format==='decimal'?'Ex: 2.50':'Ex: +150 or -110'} placeholderTextColor="#ffffff44" keyboardType="decimal-pad"/>
+        <TextInput value={form.odds} onChangeText={v=>setForm({...form,odds:v})} style={styles.input} placeholder={form.odds_format==='decimal'?'Ex: 2.50':'Ex: +150 or -110'} placeholderTextColor="#ffffff44" keyboardType={form.odds_format==='american'?'numbers-and-punctuation':'decimal-pad'}/>
         <View style={{flexDirection:'row',gap:12}}>
           <View style={{flex:2}}><Text style={styles.label}>Stake *</Text><TextInput value={form.stake} onChangeText={v=>setForm({...form,stake:v})} style={styles.input} placeholder="Ex: 100" placeholderTextColor="#ffffff44" keyboardType="decimal-pad"/></View>
           <View style={{flex:1}}><Text style={styles.label}>Currency</Text><TouchableOpacity style={[styles.input,{justifyContent:'center',alignItems:'center'}]} onPress={()=>setForm({...form,currency:form.currency==='USD'?'EUR':form.currency==='EUR'?'GBP':'USD'})}><Text style={{color:'#fff',fontSize:16}}>{form.currency}</Text></TouchableOpacity></View>
@@ -143,7 +145,22 @@ export default function BetsScreen({ user, onBack }) {
         <Text style={styles.label}>Result</Text>
         <View style={{flexDirection:'row',gap:8,flexWrap:'wrap',marginBottom:12}}>{RESULTS.map(r=>(<TouchableOpacity key={r.id} onPress={()=>setForm({...form,result:r.id})} style={[styles.chip,form.result===r.id&&{backgroundColor:r.color+'33',borderColor:r.color}]}><Text style={[styles.chipText,form.result===r.id&&{color:r.color}]}>{r.label}</Text></TouchableOpacity>))}</View>
         <Text style={styles.label}>Match Date</Text>
-        <TextInput value={form.match_date} onChangeText={v=>setForm({...form,match_date:v})} style={[styles.input,{letterSpacing:1}]} placeholder="YYYY-MM-DD" placeholderTextColor="#ffffff44" keyboardType="numbers-and-punctuation" maxLength={10}/>
+        <TouchableOpacity onPress={()=>setShowDatePicker(true)} style={[styles.input,{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}]}>
+          <Text style={{color:form.match_date?'#fff':'#ffffff44',fontSize:14}}>{form.match_date||'Select date...'}</Text>
+          <Text style={{fontSize:16}}>📅</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={form.match_date ? new Date(form.match_date) : new Date()}
+            mode="date"
+            display="spinner"
+            textColor="#fff"
+            onChange={function(event, date) {
+              setShowDatePicker(false);
+              if (date) setForm({...form, match_date: date.toISOString().slice(0,10)});
+            }}
+          />
+        )}
         <Text style={styles.label}>Notes</Text>
         <TextInput value={form.notes} onChangeText={v=>setForm({...form,notes:v})} style={[styles.input,{height:80}]} placeholder="Analysis, reason for bet..." placeholderTextColor="#ffffff44" multiline/>
         {form.odds&&form.stake&&(<View style={styles.calcBox}><Text style={styles.calcTitle}>AUTO CALCULATION</Text><Text style={styles.calcText}>Potential win: <Text style={{color:'#4CAF50',fontFamily:'BebasNeue'}}>{form.odds_format==='decimal'?((parseFloat(form.odds)-1)*parseFloat(form.stake||0)).toFixed(2):parseFloat(form.odds)>0?((parseFloat(form.odds)/100)*parseFloat(form.stake||0)).toFixed(2):((100/Math.abs(parseFloat(form.odds)))*parseFloat(form.stake||0)).toFixed(2)} {form.currency}</Text></Text></View>)}

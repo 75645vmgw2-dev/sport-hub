@@ -46,7 +46,8 @@
       ],
       "expo-localization",
       "expo-splash-screen",
-      "./withModularHeaders"
+      "./withModularHeaders",
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {
