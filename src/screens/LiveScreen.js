@@ -327,8 +327,7 @@ export default function LiveScreen({ onSelectSport }) {
           const playerId = p.playerId||p.player_id||null;
           return { name, score, thru, playerId };
         });
-        const hasRealScores = top5.some(function(p) { return p.score && p.score !== 'E' && p.thru; });
-        if (top5.length > 0 && hasRealScores) {
+        if (top5.length > 0) {
           results.push({
             id: 'golf-tournament',
             sport: 'GOLF', icon: '⛳', color: '#2E7D32', sportKey: 'GOLF',

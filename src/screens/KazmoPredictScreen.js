@@ -205,7 +205,7 @@ function TeamPickerModal({ sport, onSelect, onClose, title, t, initialLeague, on
     setLoading(false);
   }
 
-  if(showLeaguePicker&&sport.id==='soccer'){return(<SoccerLeaguePicker onSelectLeague={function(l){setSelectedLeague(l);setShowLeaguePicker(false);if(onLeagueSelected)onLeagueSelected(l);}} onClose={onClose}/>);}
+  if(showLeaguePicker&&sport.id==='soccer'){return(<SoccerLeaguePicker onSelectLeague={function(l){if(onLeagueSelected)onLeagueSelected(l);setSelectedLeague(l);setShowLeaguePicker(false);}} onClose={onClose}/>);}
   if(showTourPicker&&isTennis){
     return(<Modal visible animationType="slide" transparent><View style={styles.modalOverlay}><View style={styles.modalContent}><Text style={styles.modalTitle}>Choose circuit</Text>{TENNIS_TOURS.map(function(tour){return(<TouchableOpacity key={tour.id} style={styles.teamOption} onPress={()=>{setSelectedTour(tour);setShowTourPicker(false);}}><Text style={styles.teamOptionText}>{tour.label}</Text></TouchableOpacity>);})}<TouchableOpacity onPress={onClose} style={styles.cancelBtn}><Text style={styles.cancelBtnText}>Cancel</Text></TouchableOpacity></View></View></Modal>);
   }
