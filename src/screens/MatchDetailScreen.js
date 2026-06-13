@@ -42,7 +42,7 @@ function formatDate(date) {
   catch(e) { return String(d); }
 }
 
-function PeriodSelector({ active, onSelect, color }) {
+function PeriodSelector({ active, onSelect, color, t }) {
   return (
     <View style={styles.periodRow}>
       <Text style={styles.periodLabel}>{t('last')} :</Text>
@@ -825,7 +825,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {tab==='forme' && (
           <View>
-            <PeriodSelector active={period} onSelect={setPeriod} color={C} />
+            <PeriodSelector active={period} onSelect={setPeriod} color={C} t={t} />
             {loadingForm ? (
               <View style={styles.loadingBox}><ActivityIndicator color="#FF6B2B" size="large" /></View>
             ) : sport==='GOLF' ? (
@@ -845,7 +845,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
 
         {tab==='leaders' && (
           <View>
-            <PeriodSelector active={period} onSelect={setPeriod} color={C} />
+            <PeriodSelector active={period} onSelect={setPeriod} color={C} t={t} />
             {needsAI ? (
               <AISection content={aiContent} loading={loadingAI} t={t}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />
@@ -883,7 +883,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
         )}
         {tab==='stats' && sport!=='GOLF' && (
           <View>
-            <PeriodSelector active={period} onSelect={setPeriod} color={C} />
+            <PeriodSelector active={period} onSelect={setPeriod} color={C} t={t} />
             {needsAI ? (
               <AISection content={aiContent} loading={loadingAI} t={t}
                 onRefresh={() => { setAiLoaded(false); fetchAIPlayers(); }} />

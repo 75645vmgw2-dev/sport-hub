@@ -34,7 +34,7 @@ export default function NHLScreen({ onBack, user }) {
   const C = '#00B8D9';
 
   const TABS = [
-    { id:'finales', label:'🏆 Finales' },
+    { id:'finales', label:'🏆 ' + t('finals') },
     { id:'live', label:'🔴 Live' },
     { id:'east', label:'Est' },
     { id:'west', label:'Ouest' },
@@ -242,7 +242,7 @@ export default function NHLScreen({ onBack, user }) {
                     <View style={styles.matchCardHeader}>
                       <Text style={styles.matchLabel}>{t('match')} {i+1}</Text>
                       {isLive ? <Text style={styles.liveLabel}>● LIVE</Text> : null}
-                      {isFinished ? <Text style={styles.finishedLabel}>Terminé</Text> : null}
+                      {isFinished ? <Text style={styles.finishedLabel}>{t('finished')}</Text> : null}
                       <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                     </View>
                     <View style={styles.matchTeams}>
@@ -278,7 +278,7 @@ export default function NHLScreen({ onBack, user }) {
                     onPress={() => setSelectedMatch(buildMatch(g))}>
                     <View style={styles.matchCardHeader}>
                       {isLive ? <Text style={styles.liveLabel}>● LIVE {g.status.short}</Text> : null}
-                      {isFinished ? <Text style={styles.finishedLabel}>Terminé</Text> : null}
+                      {isFinished ? <Text style={styles.finishedLabel}>{t('finished')}</Text> : null}
                       <Text style={styles.tapHint}>{t('seeDetails')} →</Text>
                     </View>
                     <View style={styles.matchTeams}>
