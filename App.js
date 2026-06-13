@@ -173,6 +173,7 @@ function AppContent() {
     else if (currentSport.id === 'f1') SportScreen = <F1Screen {...props} initialTab={currentSport.initialTab||'races'} />;
     else if (currentSport.id === 'golf') SportScreen = <GolfScreen {...props} />;
     else if (currentSport.id === 'mma') SportScreen = <MMAScreen {...props} />;
+    else if (currentSport.id === 'event_special') SportScreen = <SoccerScreen {...props} initialLeague='wc' />;
     else SportScreen = (
       <View style={styles.comingSoon}>
         <Text style={styles.comingSoonIcon}>{currentSport.icon}</Text>

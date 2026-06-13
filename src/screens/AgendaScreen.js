@@ -316,12 +316,12 @@ export default function AgendaScreen() {
     });
   }
 
-  async function fetchPredictions() {
-    if (tab !== '24h' && tab !== '72h') return;
+  async function fetchPredictions(forcedTab) {
+    const predTab = forcedTab || (tab==='24h'||tab==='72h' ? tab : '24h');
     setLoadingPredictions(true);
     try {
       // Vérifier le cache Supabase (6h max)
-      const cacheKey = tab + '_' + new Date().toISOString().slice(0,13);
+      const cacheKey = predTab + '_' + new Date().toISOString().slice(0,13);
       const { data: cached } = await supabase.from('agenda_predictions_cache')
         .select('predictions, created_at').eq('period', cacheKey).single();
       if (cached && (new Date() - new Date(cached.created_at)) < 6*3600000) {
@@ -331,7 +331,7 @@ export default function AgendaScreen() {
       }
       // Récupérer les matchs à venir
       const upcomingAll = allEvents.filter(function(e) { return !e.isFinished && !e.isLive; });
-      const hours = tab==='24h'?24:72;
+      const hours = predTab==='24h'?24:72;
       const limit = new Date(new Date().getTime()+hours*3600000);
       const upcoming = upcomingAll.filter(function(e){ const d=new Date(e.date); return d>=new Date() && d<=limit; }).slice(0,15);
       if (upcoming.length === 0) { setLoadingPredictions(false); Alert.alert('Info', 'No upcoming matches in this period'); return; }
@@ -418,14 +418,14 @@ export default function AgendaScreen() {
             );
           })}
           {(tab==='24h'||tab==='72h') && (
-            <TouchableOpacity style={[styles.tabBtn, predictionsTab&&{backgroundColor:'#9C27B0'}]} onPress={() => {setPredictionsTab(true);}}>
+            <TouchableOpacity style={[styles.tabBtn, predictionsTab&&{backgroundColor:'#9C27B0'}]} onPress={() => {const ft=tab==='24h'||tab==='72h'?tab:'24h';if(tab!=='24h'&&tab!=='72h')setTab('24h');setPredictionsTab(true);}}>
               <Text style={[styles.tabBtnText, predictionsTab&&{color:'#fff'}]}>🔮 Predict</Text>
             </TouchableOpacity>
           )}
         </View>
       </ScrollView>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
+      {filtersReady && <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
         <View style={styles.filtersRow}>
           {SPORT_FILTERS.map(function(f) {
             const active = sportFilter===f.id;
@@ -440,7 +440,7 @@ export default function AgendaScreen() {
             );
           })}
         </View>
-      </ScrollView>
+      </ScrollView>}
 
       {predictionsTab && (tab==='24h'||tab==='72h') ? (
         <ScrollView contentContainerStyle={{padding:16,paddingBottom:40}}>
@@ -448,7 +448,7 @@ export default function AgendaScreen() {
             <Text style={{color:'#CE93D8',fontFamily:'BebasNeue',fontSize:11,letterSpacing:1,marginBottom:4}}>⚡ KAZMO AI ESTIMATES</Text>
             <Text style={{color:'#ffffff66',fontSize:11,lineHeight:16}}>Quick predictions based on team data. For deeper analysis, use Kazmo Predict.</Text>
             {!loadingPredictions && Object.keys(predictions).length === 0 && (
-              <TouchableOpacity onPress={fetchPredictions} activeOpacity={0.85} style={{marginTop:10}}>
+              <TouchableOpacity onPress={()=>fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h')} activeOpacity={0.85} style={{marginTop:10}}>
                 <LinearGradient colors={['#7B1FA2','#CE93D8']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:10,padding:12,alignItems:'center'}}>
                   <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1}}>🔮 GENERATE PREDICTIONS</Text>
                 </LinearGradient>
@@ -486,7 +486,7 @@ export default function AgendaScreen() {
             );
           })}
           {Object.keys(predictions).length > 0 && (
-            <TouchableOpacity onPress={fetchPredictions} style={{marginTop:8,alignItems:'center',padding:10}}>
+            <TouchableOpacity onPress={()=>fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h')} style={{marginTop:8,alignItems:'center',padding:10}}>
               <Text style={{color:'#9C27B0',fontSize:12,fontFamily:'BebasNeue',letterSpacing:1}}>↻ REFRESH PREDICTIONS</Text>
             </TouchableOpacity>
           )}

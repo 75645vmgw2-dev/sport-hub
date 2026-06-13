@@ -27,7 +27,8 @@ export default function BetsScreen({ user, onBack }) {
   const [showForm, setShowForm] = useState(false);
   const [editingBet, setEditingBet] = useState(null);
   const [filterResult, setFilterResult] = useState('all');
-  const emptyForm = { sport:'Football', match_home:'', match_away:'', bet_type:'Simple', bookmaker:'', odds:'', odds_format:'decimal', stake:'', currency:'USD', result:'pending', notes:'', match_date:new Date().toISOString().slice(0,10) };
+  const emptyLeg = { match_home:'', match_away:'', sport:'Football', odds:'', odds_format:'decimal' };
+  const emptyForm = { sport:'Football', match_home:'', match_away:'', bet_type:'Simple', bookmaker:'', odds:'', odds_format:'decimal', stake:'', currency:'USD', result:'pending', notes:'', match_date:new Date().toISOString().slice(0,10), legs:[{...emptyLeg}] };
   const [form, setForm] = useState(emptyForm);
   useEffect(() => { fetchBets(); }, []);
   async function fetchBets() {
@@ -35,11 +36,32 @@ export default function BetsScreen({ user, onBack }) {
     try { const { data } = await supabase.from('user_bets').select('*').eq('user_id', user.id).order('created_at', { ascending: false }); setBets(data||[]); } catch(e) {}
     setLoading(false);
   }
+  function calcCombinedOdds(legs, format) {
+    let total = 1;
+    legs.forEach(function(leg) {
+      if (!leg.odds) return;
+      let d = parseFloat(leg.odds);
+      if (format === 'american' || leg.odds_format === 'american') {
+        const o = parseFloat(leg.odds);
+        d = o > 0 ? (o/100)+1 : (100/Math.abs(o))+1;
+      }
+      total *= d;
+    });
+    return total.toFixed(2);
+  }
+
   async function saveBet() {
-    if (!form.match_home||!form.odds||!form.stake) { Alert.alert('Error', 'Match, odds and stake are required'); return; }
+    const isCombo = form.bet_type === 'Combiné';
+    const finalOdds = isCombo ? calcCombinedOdds(form.legs, form.odds_format) : form.odds;
+    if (!form.stake) { Alert.alert('Error', 'Stake is required'); return; }
+    if (!isCombo && !form.match_home) { Alert.alert('Error', 'Match is required'); return; }
+    if (isCombo && form.legs.filter(l=>l.match_home&&l.odds).length < 2) { Alert.alert('Error', 'A combo bet needs at least 2 matches with odds'); return; }
     try {
-      const profit = calcProfit(form.odds, form.odds_format, form.stake, form.result);
-      const data = { ...form, user_id:user.id, odds:parseFloat(form.odds), stake:parseFloat(form.stake), profit_loss:parseFloat(profit) };
+      const profit = calcProfit(finalOdds, 'decimal', form.stake, form.result);
+      const isCombo = form.bet_type === 'Combiné';
+      const finalOdds = isCombo ? calcCombinedOdds(form.legs, form.odds_format) : form.odds;
+      const comboMatch = isCombo ? form.legs.filter(l=>l.match_home).map(l=>l.match_home+(l.match_away?' vs '+l.match_away:'')).join(' | ') : null;
+      const data = { ...form, user_id:user.id, match_home:isCombo?(comboMatch||'Combiné'):form.match_home, odds:parseFloat(finalOdds)||1, stake:parseFloat(form.stake), profit_loss:parseFloat(profit) };
       if (editingBet) { await supabase.from('user_bets').update(data).eq('id', editingBet.id); }
       else { await supabase.from('user_bets').insert(data); }
       setShowForm(false); setEditingBet(null); setForm(emptyForm); fetchBets();
@@ -74,10 +96,35 @@ export default function BetsScreen({ user, onBack }) {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom:12}}>
           <View style={{flexDirection:'row',gap:8}}>{SPORTS.map(s=>(<TouchableOpacity key={s} onPress={()=>setForm({...form,sport:s})} style={[styles.chip,form.sport===s&&styles.chipActive]}><Text style={[styles.chipText,form.sport===s&&{color:'#fff'}]}>{s}</Text></TouchableOpacity>))}</View>
         </ScrollView>
-        <Text style={styles.label}>Team / Player 1 *</Text>
-        <TextInput value={form.match_home} onChangeText={v=>setForm({...form,match_home:v})} style={styles.input} placeholder="Ex: Real Madrid" placeholderTextColor="#ffffff44"/>
-        <Text style={styles.label}>Team / Player 2</Text>
-        <TextInput value={form.match_away} onChangeText={v=>setForm({...form,match_away:v})} style={styles.input} placeholder="Ex: Barcelona" placeholderTextColor="#ffffff44"/>
+        {form.bet_type !== 'Combiné' ? (<>
+          <Text style={styles.label}>Team / Player 1 *</Text>
+          <TextInput value={form.match_home} onChangeText={v=>setForm({...form,match_home:v})} style={styles.input} placeholder="Ex: Real Madrid" placeholderTextColor="#ffffff44"/>
+          <Text style={styles.label}>Team / Player 2</Text>
+          <TextInput value={form.match_away} onChangeText={v=>setForm({...form,match_away:v})} style={styles.input} placeholder="Ex: Barcelona" placeholderTextColor="#ffffff44"/>
+        </>) : (<>
+          <Text style={styles.label}>MATCHES IN COMBO *</Text>
+          {form.legs.map(function(leg, i) { return (
+            <View key={i} style={{backgroundColor:'#0d0d1a',borderRadius:10,padding:10,marginBottom:8,borderWidth:1,borderColor:'#ffffff11'}}>
+              <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+                <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:12}}>MATCH {i+1}</Text>
+                {form.legs.length > 2 && <TouchableOpacity onPress={function(){const l=[...form.legs];l.splice(i,1);setForm({...form,legs:l});}}><Text style={{color:'#E53935',fontSize:12}}>✕</Text></TouchableOpacity>}
+              </View>
+              <TextInput value={leg.match_home} onChangeText={function(v){const l=[...form.legs];l[i]={...l[i],match_home:v};setForm({...form,legs:l});}} style={[styles.input,{marginBottom:4}]} placeholder="Team/Player 1" placeholderTextColor="#ffffff44"/>
+              <TextInput value={leg.match_away} onChangeText={function(v){const l=[...form.legs];l[i]={...l[i],match_away:v};setForm({...form,legs:l});}} style={[styles.input,{marginBottom:4}]} placeholder="Team/Player 2 (optional)" placeholderTextColor="#ffffff44"/>
+              <View style={{flexDirection:'row',gap:8}}>
+                <View style={{flex:1}}>
+                  <TextInput value={leg.odds} onChangeText={function(v){const l=[...form.legs];l[i]={...l[i],odds:v};setForm({...form,legs:l});}} style={styles.input} placeholder="Odds" placeholderTextColor="#ffffff44" keyboardType="decimal-pad"/>
+                </View>
+                <View style={{flexDirection:'row',gap:4}}>
+                  <TouchableOpacity onPress={function(){const l=[...form.legs];l[i]={...l[i],odds_format:'decimal'};setForm({...form,legs:l});}} style={[styles.chip,leg.odds_format==='decimal'&&styles.chipActive,{paddingHorizontal:8}]}><Text style={[styles.chipText,leg.odds_format==='decimal'&&{color:'#fff'}]}>DEC</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={function(){const l=[...form.legs];l[i]={...l[i],odds_format:'american'};setForm({...form,legs:l});}} style={[styles.chip,leg.odds_format==='american'&&styles.chipActive,{paddingHorizontal:8}]}><Text style={[styles.chipText,leg.odds_format==='american'&&{color:'#fff'}]}>US</Text></TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          );})}
+          {form.legs.length < 10 && <TouchableOpacity onPress={function(){setForm({...form,legs:[...form.legs,{...emptyLeg}]});}} style={{backgroundColor:'#FF6B2B11',borderRadius:10,padding:10,alignItems:'center',borderWidth:1,borderColor:'#FF6B2B33',marginBottom:8}}><Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:13}}>+ ADD MATCH</Text></TouchableOpacity>}
+          {form.legs.filter(l=>l.odds).length >= 2 && <View style={{backgroundColor:'#4CAF5011',borderRadius:8,padding:8,borderWidth:1,borderColor:'#4CAF5033',marginBottom:8}}><Text style={{color:'#4CAF50',fontFamily:'BebasNeue',fontSize:12}}>COMBINED ODDS: {calcCombinedOdds(form.legs,'decimal')}</Text></View>}
+        </>)}
         <Text style={styles.label}>Bet Type</Text>
         <View style={{flexDirection:'row',gap:8,marginBottom:12}}>{BET_TYPES.map(bt=>(<TouchableOpacity key={bt} onPress={()=>setForm({...form,bet_type:bt})} style={[styles.chip,form.bet_type===bt&&styles.chipActive]}><Text style={[styles.chipText,form.bet_type===bt&&{color:'#fff'}]}>{bt}</Text></TouchableOpacity>))}</View>
         <Text style={styles.label}>Bookmaker</Text>
@@ -96,7 +143,7 @@ export default function BetsScreen({ user, onBack }) {
         <Text style={styles.label}>Result</Text>
         <View style={{flexDirection:'row',gap:8,flexWrap:'wrap',marginBottom:12}}>{RESULTS.map(r=>(<TouchableOpacity key={r.id} onPress={()=>setForm({...form,result:r.id})} style={[styles.chip,form.result===r.id&&{backgroundColor:r.color+'33',borderColor:r.color}]}><Text style={[styles.chipText,form.result===r.id&&{color:r.color}]}>{r.label}</Text></TouchableOpacity>))}</View>
         <Text style={styles.label}>Match Date</Text>
-        <TextInput value={form.match_date} onChangeText={v=>setForm({...form,match_date:v})} style={styles.input} placeholder="YYYY-MM-DD" placeholderTextColor="#ffffff44"/>
+        <TextInput value={form.match_date} onChangeText={v=>setForm({...form,match_date:v})} style={[styles.input,{letterSpacing:1}]} placeholder="YYYY-MM-DD" placeholderTextColor="#ffffff44" keyboardType="numbers-and-punctuation" maxLength={10}/>
         <Text style={styles.label}>Notes</Text>
         <TextInput value={form.notes} onChangeText={v=>setForm({...form,notes:v})} style={[styles.input,{height:80}]} placeholder="Analysis, reason for bet..." placeholderTextColor="#ffffff44" multiline/>
         {form.odds&&form.stake&&(<View style={styles.calcBox}><Text style={styles.calcTitle}>AUTO CALCULATION</Text><Text style={styles.calcText}>Potential win: <Text style={{color:'#4CAF50',fontFamily:'BebasNeue'}}>{form.odds_format==='decimal'?((parseFloat(form.odds)-1)*parseFloat(form.stake||0)).toFixed(2):parseFloat(form.odds)>0?((parseFloat(form.odds)/100)*parseFloat(form.stake||0)).toFixed(2):((100/Math.abs(parseFloat(form.odds)))*parseFloat(form.stake||0)).toFixed(2)} {form.currency}</Text></Text></View>)}
@@ -170,7 +217,7 @@ const styles = StyleSheet.create({
   title:{color:'#fff',fontFamily:'BebasNeue',fontSize:18,letterSpacing:1},
   label:{color:'#ffffff88',fontSize:11,fontFamily:'BebasNeue',letterSpacing:1,marginBottom:6,marginTop:12},
   input:{backgroundColor:'#16162a',borderRadius:10,padding:12,color:'#fff',fontSize:14,borderWidth:1,borderColor:'#ffffff22',marginBottom:4},
-  chip:{paddingHorizontal:12,paddingVertical:6,borderRadius:16,backgroundColor:'#16162a',borderWidth:1,borderColor:'#ffffff22'},
+  chip:{paddingHorizontal:12,paddingVertical:4,borderRadius:16,backgroundColor:'#16162a',borderWidth:1,borderColor:'#ffffff22',height:32,justifyContent:'center'},
   chipActive:{backgroundColor:'#FF6B2B33',borderColor:'#FF6B2B'},
   chipText:{color:'#ffffffcc',fontSize:12,fontFamily:'BebasNeue'},
   saveBtn:{borderRadius:12,padding:14,alignItems:'center'},

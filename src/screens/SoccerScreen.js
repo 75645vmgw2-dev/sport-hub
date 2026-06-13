@@ -23,8 +23,9 @@ function GradientText({ text, fontSize, letterSpacing }) {
 
 const FS = SEASONS.FOOTBALL;
 
-export default function SoccerScreen({ onBack, user }) {
+export default function SoccerScreen({ onBack, user, initialLeague }) {
   const { t } = useLanguage();
+  const [selectedCountry, setSelectedCountry] = useState(initialLeague||null);
   const COUNTRIES = [
     {
       id: 'europe', name: t('europeanCompetitions'), flag: '⭐', color: '#1a1aff',
@@ -82,7 +83,7 @@ export default function SoccerScreen({ onBack, user }) {
   ];
   
   const WC_LEAGUE = { id:'wc', name:'Coupe du Monde 2026', leagueId:1, season:2026, color:'#006341' };
-  const [selectedCountry, setSelectedCountry] = useState(null);
+
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [tab, setTab] = useState('matchs');
