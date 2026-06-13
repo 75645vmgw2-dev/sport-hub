@@ -11,6 +11,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { LANGUAGES } from '../i18n/translations';
 import AdminScreen from './AdminScreen';
 import FAQScreen from './FAQScreen';
+import BetsScreen from './BetsScreen';
 
 function GradientText({ text, fontSize, letterSpacing }) {
   return (
@@ -51,6 +52,7 @@ export default function ProfileScreen({ user, onLogout }) {
   const [showLangModal, setShowLangModal] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
+  const [showBets, setShowBets] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [form, setForm] = useState({ first_name:'', last_name:'', username:'', country:'' });
   const [userVotes, setUserVotes] = useState([]);
@@ -327,6 +329,15 @@ export default function ProfileScreen({ user, onLogout }) {
               </View>
             </View>
 
+            {/* MES PARIS */}
+            <TouchableOpacity activeOpacity={0.85} onPress={()=>setShowBets(true)} style={[styles.faqBtn,{borderColor:'#FFD70033',backgroundColor:'#FFD70008'}]}>
+              <Text style={styles.faqBtnIcon}>📊</Text>
+              <View style={{flex:1}}>
+                <Text style={styles.faqBtnText}>{t('myBets')}</Text>
+                <Text style={styles.faqBtnSub}>{t('myBetsSub')}</Text>
+              </View>
+              <Text style={styles.faqBtnArrow}>›</Text>
+            </TouchableOpacity>
             {/* FAQ */}
             <TouchableOpacity activeOpacity={0.85} onPress={()=>setShowFAQ(true)} style={styles.faqBtn}>
               <Text style={styles.faqBtnIcon}>💬</Text>

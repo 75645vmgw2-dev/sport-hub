@@ -126,7 +126,7 @@ export default function AgendaScreen() {
 
   const SPORT_FILTERS = [
     { id:'all', icon:'🌐', labelKey:'all' },
-    { id:'wc', icon:'🌍', label:'Mondial' },
+    { id:'wc', icon:'🌍', label:t('worldCup').split(' ')[0] },
     { id:'nba', icon:'🏀', label:'NBA' },
     { id:'nhl', icon:'🏒', label:'NHL' },
     { id:'mlb', icon:'⚾', label:'MLB' },
@@ -313,7 +313,7 @@ export default function AgendaScreen() {
         return;
       }
       // Récupérer les matchs à venir
-      const upcoming = filteredEvents().filter(function(e) { return !e.isFinished && !e.isLive; }).slice(0,15);
+      const upcoming = getFilteredEvents().filter(function(e) { return !e.isFinished && !e.isLive; }).slice(0,15);
       if (upcoming.length === 0) { setLoadingPredictions(false); return; }
       const matchList = upcoming.map(function(e, i) {
         return (i+1) + '. ' + e.home + ' vs ' + e.away + ' (' + e.sport + ')';
@@ -440,7 +440,7 @@ export default function AgendaScreen() {
               </View>
             )}
           </View>
-          {filteredEvents().filter(function(e){return !e.isFinished&&!e.isLive;}).map(function(e,i){
+          {getFilteredEvents().filter(function(e){return !e.isFinished&&!e.isLive;}).map(function(e,i){
             const pred = predictions[e.id];
             const d = new Date(e.date);
             const timeStr = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
