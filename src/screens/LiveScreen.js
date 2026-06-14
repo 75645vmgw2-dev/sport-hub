@@ -167,7 +167,7 @@ function F1RaceCard({ g, t, onPress }) {
 function GameCard({ g, onPress, onSelectSport, t, locale }) {
   const liveTime = getLiveTime(g);
   if (g.sportKey === 'GOLF') return <GolfTournamentCard g={g} t={t} onPress={onPress} />;
-  if (g.sportKey === 'F1') return <F1RaceCard g={g} t={t} onPress={onPress} />;
+  if (g.sportKey === 'F1') return <F1RaceCard g={g} t={t} onPress={()=>onPress(g)} />;
   function handlePress() {
     if (g.sportKey === 'MMA' && onSelectSport) { onSelectSport({ id:'mma' }); }
     else { onPress(g); }
