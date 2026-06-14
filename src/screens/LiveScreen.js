@@ -315,7 +315,7 @@ export default function LiveScreen({ onSelectSport }) {
         if (!t.date) return false;
         const start = t.date.start && t.date.start['$date'] ? Number(t.date.start['$date']['$numberLong']) : new Date(t.date.start).getTime();
         const end = t.date.end && t.date.end['$date'] ? Number(t.date.end['$date']['$numberLong']) : new Date(t.date.end).getTime();
-        return start <= nowTs && end >= nowTs;
+        return start <= nowTs && (end + 86400000) >= nowTs;
       });
       if (currentTourn) {
         const lbRes = await fetch('https://live-golf-data.p.rapidapi.com/leaderboard?orgId=1&tournId='+currentTourn.tournId+'&year='+year, { headers:H_GOLF });

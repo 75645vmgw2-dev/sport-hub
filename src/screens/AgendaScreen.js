@@ -339,8 +339,9 @@ export default function AgendaScreen() {
         if (!start||!end) return;
         const startTs=start.getTime(); const endTs=end.getTime();
         if (endTs<yesterdayTs||startTs>in30Ts) return;
-        const isLive = startTs<=nowTs&&endTs>=nowTs;
-        const isFinished = endTs<nowTs;
+        const endTsAdj = endTs + 86400000; // +1 jour pour couvrir toute la journée finale
+        const isLive = startTs<=nowTs&&endTsAdj>=nowTs;
+        const isFinished = endTsAdj<nowTs;
         results.push({ id:'golf-'+tg.tournId, sport:'golf', icon:'⛳', competition:'PGA Tour', round:tg.name||'Golf', home:tg.name||'Tournament', homeLogo:null, away:tg.course?.name||'', awayLogo:null, homeId:null, awayId:null, homeScore:null, awayScore:null, date:start.toISOString(), venue:tg.course?.name||null, city:null, isLive, isFinished, status:isLive?'LIVE':isFinished?'FT':'NS', sportKey:'GOLF' });
       });
     } catch(e) {}
