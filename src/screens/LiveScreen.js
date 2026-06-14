@@ -130,9 +130,9 @@ function GolfTournamentCard({ g, t, onPress }) {
 }
 
 // Carte F1
-function F1RaceCard({ g, t }) {
+function F1RaceCard({ g, t, onPress }) {
   return (
-    <TouchableOpacity style={[styles.card, g.isLive && { borderColor:'#E10600', borderWidth:1 }]} activeOpacity={0.8}>
+    <TouchableOpacity style={[styles.card, g.isLive && { borderColor:'#E10600', borderWidth:1 }]} activeOpacity={0.8} onPress={onPress}>
       <View style={styles.cardHeader}>
         <View style={[styles.sportBadge, { backgroundColor:'#E10600' }]}>
           <Text style={styles.sportBadgeText}>🏎 F1</Text>
@@ -167,7 +167,7 @@ function F1RaceCard({ g, t }) {
 function GameCard({ g, onPress, onSelectSport, t, locale }) {
   const liveTime = getLiveTime(g);
   if (g.sportKey === 'GOLF') return <GolfTournamentCard g={g} t={t} onPress={onPress} />;
-  if (g.sportKey === 'F1') return <F1RaceCard g={g} t={t} />;
+  if (g.sportKey === 'F1') return <F1RaceCard g={g} t={t} onPress={onPress} />;
   function handlePress() {
     if (g.sportKey === 'MMA' && onSelectSport) { onSelectSport({ id:'mma' }); }
     else { onPress(g); }

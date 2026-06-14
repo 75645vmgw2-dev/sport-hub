@@ -290,58 +290,6 @@ export default function ProfileScreen({ user, onLogout }) {
               </TouchableOpacity>
             </View>
 
-            {/* ROADMAP */}
-            <View style={styles.roadmapCard}>
-              <View style={styles.roadmapHeader}>
-                <MaskedView maskElement={<Text style={styles.roadmapTitleMask}>🚀 {t('roadmapTitle')}</Text>}>
-                  <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}}>
-                    <Text style={[styles.roadmapTitleMask,{opacity:0}]}>🚀 {t('roadmapTitle')}</Text>
-                  </LinearGradient>
-                </MaskedView>
-                <Text style={styles.roadmapSub}>{t('roadmapSub')}</Text>
-              </View>
-
-              {FEATURES.map(function(f){
-                const hasVoted = userVotes.includes(f.id);
-                const count = voteCounts[f.id]||0;
-                return(
-                  <View key={f.id} style={styles.featureRow}>
-                    <Text style={styles.featureIcon}>{f.icon}</Text>
-                    <Text style={styles.featureLabel}>{t(f.labelKey)}</Text>
-                    <TouchableOpacity
-                      style={[styles.voteBtn, hasVoted&&styles.voteBtnActive]}
-                      onPress={()=>toggleVote(f.id)}
-                      activeOpacity={0.7}>
-                      <Text style={styles.voteBtnIcon}>{hasVoted?'❤️':'🤍'}</Text>
-                      <Text style={[styles.voteBtnCount, hasVoted&&{color:'#FF6B2B'}]}>{count}</Text>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
-
-              <View style={styles.suggestionSection}>
-                <Text style={styles.suggestionTitle}>💡 {t('suggestionTitle')}</Text>
-                <TextInput
-                  value={suggestion}
-                  onChangeText={setSuggestion}
-                  style={styles.suggestionInput}
-                  placeholder={t('suggestionPlaceholder')}
-                  placeholderTextColor="#ffffff44"
-                  multiline
-                  maxLength={300}
-                />
-                <TouchableOpacity onPress={sendSuggestion} disabled={!suggestion.trim()||sendingSuggestion} activeOpacity={0.85}>
-                  <LinearGradient
-                    colors={suggestion.trim()&&!sendingSuggestion?['#FF6B2B','#FFD600']:['#333','#444']}
-                    start={{x:0,y:0}} end={{x:1,y:0}}
-                    style={styles.suggestionBtn}>
-                    {sendingSuggestion?<ActivityIndicator color="#fff" size="small"/>:<Text style={styles.suggestionBtnText}>📨 {t('suggestionSend')}</Text>}
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-
             {/* LEGAL */}
             <View style={{flexDirection:'row',gap:8,marginBottom:8}}>
               <TouchableOpacity onPress={()=>Linking.openURL('https://kazmo.app/privacy')} style={{flex:1,backgroundColor:'#ffffff08',borderRadius:10,padding:12,alignItems:'center',borderWidth:1,borderColor:'#ffffff11'}}>
