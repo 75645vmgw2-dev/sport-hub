@@ -70,7 +70,7 @@ const SPORTS_SOLO = [
   { id:'f1', label:'F1', icon:'🏎', color:'#E10600' },
   { id:'golf', label:'Golf', icon:'⛳', color:'#2E7D32' },
 ];
-const ALL_SPORTS = [...SPORTS_DUEL, ...SPORTS_SOLO];
+export const ALL_SPORTS = [...SPORTS_DUEL, ...SPORTS_SOLO];
 const INDIVIDUAL_SPORTS = ['tennis','f1','golf','mma','boxing'];
 const SOLO_SPORTS = ['f1','golf'];
 
@@ -300,13 +300,13 @@ async function fetchSoccerData(team1,team2){
   }catch(e){return '';}
 }
 
-async function fetchSportData(sport,team1,team2){
+export async function fetchSportData(sport,team1,team2){
   if(sport.id==='nba')return fetchNBAData(team1,team2);
   if(sport.id==='soccer')return fetchSoccerData(team1,team2);
   return '';
 }
 
-function buildPrompt(sport,team1,team2,dateLabel,surfaceInfo,context,langName){
+export function buildPrompt(sport,team1,team2,dateLabel,surfaceInfo,context,langName){
   const today=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
   const isSolo=SOLO_SPORTS.indexOf(sport.id)>=0;
   if(isSolo){

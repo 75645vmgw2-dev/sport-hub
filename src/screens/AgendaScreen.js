@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Act
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { useLanguage } from '../i18n/LanguageContext';
+import { fetchSportData, buildPrompt, ALL_SPORTS } from './KazmoPredictScreen';
 import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import MatchDetailScreen from './MatchDetailScreen';
 import MMAScreen from './MMAScreen';
@@ -69,6 +70,93 @@ function parseGolfDate(v) {
 }
 
 // Bannière Coupe du Monde
+function AgendaMatchPredictScreen({ match, sport, language, t, onBack }) {
+  const [loading, setLoading] = React.useState(false);
+  const [result, setResult] = React.useState(null);
+  const [tab, setTab] = React.useState('rapide');
+  const langNames = {fr:'français',en:'english',es:'español',pt:'português',de:'deutsch',it:'italiano',ar:'العربية',ru:'русский'};
+
+  React.useEffect(function() { analyze(); }, []);
+
+  async function analyze() {
+    setLoading(true);
+    try {
+      const ctx = await fetchSportData(sport, match.home, match.away);
+      const ln = langNames[language] || 'english';
+      const dateLabel = match.date ? new Date(match.date).toLocaleDateString() : 'Today';
+      const prompt = buildPrompt(sport, match.home, match.away, dateLabel, '', ctx, ln);
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1500,messages:[{role:'user',content:prompt}],tools:[{type:'web_search_20250305',name:'web_search'}]})
+      });
+      const data = await response.json();
+      const text = (data.content||[]).map(function(c){return c.text||'';}).join('').replace(/<cite[^>]*>/g,'').replace(/<\/cite>/g,'').replace(/\[\d+\]/g,'');
+      const clean = text.replace(/```json|```/g,'').trim();
+      const parsed = JSON.parse(clean);
+      setResult(parsed);
+    } catch(e) { console.error(e); }
+    setLoading(false);
+  }
+
+  return (
+    <SafeAreaView style={{flex:1,backgroundColor:'#080814'}}>
+      <View style={{flexDirection:'row',alignItems:'center',padding:16,paddingBottom:8}}>
+        <TouchableOpacity onPress={onBack}><Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1}}>← Back</Text></TouchableOpacity>
+        <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1,marginLeft:12}}>🔮 KAZMO PREDICT</Text>
+      </View>
+      <View style={{alignItems:'center',padding:16}}>
+        <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:20,letterSpacing:1}}>{match.home}</Text>
+        <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:14,marginVertical:4}}>VS</Text>
+        <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:20,letterSpacing:1}}>{match.away}</Text>
+      </View>
+      {loading ? (
+        <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+          <ActivityIndicator color="#FF6B2B" size="large"/>
+          <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1,marginTop:16}}>KAZMO ANALYSIS...</Text>
+          <Text style={{color:'#ffffff44',fontSize:11,marginTop:8}}>This may take up to 30 seconds</Text>
+        </View>
+      ) : result ? (
+        <ScrollView contentContainerStyle={{padding:16}}>
+          {result.winner && (
+            <View style={{backgroundColor:'#FF6B2B11',borderRadius:16,padding:20,alignItems:'center',marginBottom:16,borderWidth:1,borderColor:'#FF6B2B33'}}>
+              <Text style={{color:'#ffffff88',fontFamily:'BebasNeue',fontSize:11,letterSpacing:2}}>KAZMO PRÉDIT</Text>
+              <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:28,letterSpacing:2,marginTop:4}}>{result.winner}</Text>
+              {result.confidence && (
+                <>
+                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:36,marginTop:8}}>{result.confidence}%</Text>
+                  <Text style={{color:'#ffffff55',fontFamily:'BebasNeue',fontSize:11,letterSpacing:1}}>CONFIANCE</Text>
+                  <View style={{width:'100%',height:6,backgroundColor:'#ffffff11',borderRadius:3,marginTop:8,overflow:'hidden'}}>
+                    <View style={{width:result.confidence+'%',height:'100%',backgroundColor:'#FF6B2B',borderRadius:3}}/>
+                  </View>
+                </>
+              )}
+            </View>
+          )}
+          <View style={{flexDirection:'row',gap:8,marginBottom:16}}>
+            {['rapide','detaille','expert'].map(function(tb){return(
+              <TouchableOpacity key={tb} onPress={()=>setTab(tb)} style={{flex:1,padding:10,borderRadius:10,backgroundColor:tab===tb?'#FF6B2B22':'#16162a',borderWidth:1,borderColor:tab===tb?'#FF6B2B':'#ffffff22',alignItems:'center'}}>
+                <Text style={{color:tab===tb?'#FF6B2B':'#ffffff88',fontFamily:'BebasNeue',fontSize:12}}>{tb==='rapide'?'⚡ QUICK':tb==='detaille'?'🇮🇹 DETAILED':'🎯 EXPERT'}</Text>
+              </TouchableOpacity>
+            );})}
+          </View>
+          <View style={{backgroundColor:'#16162a',borderRadius:12,padding:16,borderWidth:1,borderColor:'#ffffff11'}}>
+            <Text style={{color:'#ffffffcc',fontSize:13,lineHeight:20}}>{result[tab]||result.rapide||''}</Text>
+          </View>
+          <TouchableOpacity onPress={analyze} style={{marginTop:16,backgroundColor:'#FF6B2B22',borderRadius:12,padding:14,alignItems:'center',borderWidth:1,borderColor:'#FF6B2B44'}}>
+            <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1}}>↻ NEW ANALYSIS</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      ) : (
+        <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+          <Text style={{color:'#ffffff55',fontSize:13}}>Analysis failed. Try again.</Text>
+          <TouchableOpacity onPress={analyze} style={{marginTop:12}}><Text style={{color:'#FF6B2B'}}>Retry</Text></TouchableOpacity>
+        </View>
+      )}
+    </SafeAreaView>
+  );
+}
+
 function WorldCupBanner({ onPress }) {
   const now = new Date();
   const isLive = now >= WC_START && now <= WC_END;
@@ -114,6 +202,7 @@ export default function AgendaScreen() {
   const [loadingPredictions, setLoadingPredictions] = useState(false);
   const [predictionsTab, setPredictionsTab] = useState(false);
   const [predPage, setPredPage] = useState(0);
+  const [predictingMatch, setPredictingMatch] = useState(null);
   const PRED_PAGE_SIZE = 15;
   const [dynamicEvents, setDynamicEvents] = useState([]);
   const [filtersReady, setFiltersReady] = useState(false);
@@ -124,7 +213,6 @@ export default function AgendaScreen() {
     { id:'24h', label:'24H' },
     { id:'72h', label:'72H' },
     { id:'7j', label:'7J' },
-    { id:'30j', label:'30J' },
     { id:'done', label:'✅' },
   ];
 
@@ -301,7 +389,7 @@ export default function AgendaScreen() {
           return e.sport === ev.sport || (ev.league_id && e.leagueId === ev.league_id);
         }
         if (sportFilter === 'wc') return e.sport === 'wc';
-        if (sportFilter === 'foot') return e.sport === 'foot';
+        if (sportFilter === 'foot') return e.sport === 'foot' || e.sport === 'wc';
         return e.sport === sportFilter;
       });
     }
@@ -380,6 +468,13 @@ export default function AgendaScreen() {
     else { setSelectedMatch({match:buildMatch(e), sport:e.sport, sportKey:e.sportKey}); }
   }
 
+  if (predictingMatch) {
+    const sportMap = {'nba':'nba','nhl':'nhl','mlb':'mlb','nfl':'nfl','foot':'soccer','wc':'soccer','mma':'mma','f1':'f1','golf':'golf','tennis':'tennis'};
+    const sportId = sportMap[predictingMatch.sport] || 'soccer';
+    const sport = ALL_SPORTS.find(function(s){return s.id===sportId;}) || {id:sportId,label:predictingMatch.sport,icon:'⚽',color:'#FF6B2B'};
+    return <AgendaMatchPredictScreen match={predictingMatch} sport={sport} language={language} t={t} onBack={()=>setPredictingMatch(null)} />;
+  }
+
   if (selectedSport) {
     const back = () => setSelectedSport(null);
     if (selectedSport.type === 'mma') return (<View style={{flex:1}}><MMAScreen onBack={back} /><TouchableOpacity onPress={back} style={styles.backToScreen}><Text style={styles.backToScreenText}>← {t('backToHome')}</Text></TouchableOpacity></View>);
@@ -428,11 +523,7 @@ export default function AgendaScreen() {
               </TouchableOpacity>
             );
           })}
-          {(tab==='24h'||tab==='72h') && (
-            <TouchableOpacity style={[styles.tabBtn, predictionsTab&&{backgroundColor:'#9C27B0'}]} onPress={() => {const ft=tab==='24h'||tab==='72h'?tab:'24h';if(tab!=='24h'&&tab!=='72h')setTab('24h');setPredictionsTab(true);}}>
-              <Text style={[styles.tabBtnText, predictionsTab&&{color:'#fff'}]}>🔮 Predict</Text>
-            </TouchableOpacity>
-          )}
+
         </View>
       </View>
 
@@ -472,7 +563,12 @@ export default function AgendaScreen() {
               </View>
             )}
           </View>
-          {getFilteredEvents().filter(function(e){return !e.isFinished&&!e.isLive;}).map(function(e,i){
+          {(function(){
+            const hours2 = tab==='24h'?24:72;
+            const limit2 = new Date(new Date().getTime()+hours2*3600000);
+            const allF = getFilteredEvents().filter(function(e){ return !e.isFinished&&!e.isLive&&new Date(e.date)<=limit2; });
+            const pageMatches = allF.slice(predPage*PRED_PAGE_SIZE, (predPage+1)*PRED_PAGE_SIZE);
+            return pageMatches.map(function(e,i){
             const eIdx = getFilteredEvents().filter(function(ev){return !ev.isFinished&&!ev.isLive;}).findIndex(function(ev){return ev.id===e.id;});
             const pred = predictions[e.id] || predictions['pos_'+eIdx];
             const d = new Date(e.date);
@@ -496,7 +592,8 @@ export default function AgendaScreen() {
                 )}
               </View>
             );
-          })}
+            });
+          })()}
           {Object.keys(predictions).length > 0 && (
             <View style={{flexDirection:'row',gap:8,marginTop:8,justifyContent:'center'}}>
               {predPage > 0 && <TouchableOpacity onPress={()=>{const p=predPage-1;setPredPage(p);setPredictions({});fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h',p);}} style={{padding:10,backgroundColor:'#9C27B011',borderRadius:10,borderWidth:1,borderColor:'#9C27B033'}}><Text style={{color:'#9C27B0',fontSize:12,fontFamily:'BebasNeue'}}>← PREV 15</Text></TouchableOpacity>}
@@ -573,6 +670,11 @@ export default function AgendaScreen() {
                             </View>
                           </View>
                           {e.venue ? <Text style={styles.venueText}>📍 {e.venue}{e.city?', '+e.city:''}</Text> : null}
+                          {!e.isFinished && !e.isLive && e.home && e.away && (
+                            <TouchableOpacity onPress={function(ev){ev.stopPropagation();setPredictingMatch(e);}} style={{marginTop:8,backgroundColor:'#FF6B2B11',borderRadius:8,padding:8,alignItems:'center',borderWidth:1,borderColor:'#FF6B2B33'}}>
+                              <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:12,letterSpacing:1}}>🔮 KAZMO PREDICT</Text>
+                            </TouchableOpacity>
+                          )}
                         </TouchableOpacity>
                       );
                     })}
