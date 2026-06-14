@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Act
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { useLanguage } from '../i18n/LanguageContext';
-import { fetchSportData, buildPrompt, ALL_SPORTS } from './KazmoPredictScreen';
+import { fetchSportData, buildPrompt, ALL_SPORTS, parseJSONRobust } from './KazmoPredictScreen';
 import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import MatchDetailScreen from './MatchDetailScreen';
 import MMAScreen from './MMAScreen';
@@ -74,7 +74,14 @@ function AgendaMatchPredictScreen({ match, sport, language, t, onBack }) {
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState(null);
   const [tab, setTab] = React.useState('rapide');
+  const [msgIdx, setMsgIdx] = React.useState(0);
   const langNames = {fr:'français',en:'english',es:'español',pt:'português',de:'deutsch',it:'italiano',ar:'العربية',ru:'русский'};
+  const STATUS_MSGS = ['🔍 Searching recent data...','📊 Analyzing team form...','🧠 Computing prediction...','🎯 Finalizing analysis...'];
+  React.useEffect(function(){
+    if(!loading) return;
+    const iv = setInterval(function(){setMsgIdx(function(p){return(p+1)%STATUS_MSGS.length;});},3000);
+    return function(){clearInterval(iv);};
+  },[loading]);
 
   React.useEffect(function() { analyze(); }, []);
 
@@ -91,9 +98,10 @@ function AgendaMatchPredictScreen({ match, sport, language, t, onBack }) {
         body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1500,messages:[{role:'user',content:prompt}],tools:[{type:'web_search_20250305',name:'web_search'}]})
       });
       const data = await response.json();
-      const text = (data.content||[]).map(function(c){return c.text||'';}).join('').replace(/<cite[^>]*>/g,'').replace(/<\/cite>/g,'').replace(/\[\d+\]/g,'');
-      const clean = text.replace(/```json|```/g,'').trim();
-      const parsed = JSON.parse(clean);
+      const raw = (data.content||[]).map(function(c){return c.text||'';}).join('');
+      const text = raw.replace(/<cite[^>]*>/g,'').replace(/<\/cite>/g,'').replace(/\[\d+\]/g,'');
+      const parsed = parseJSONRobust(text);
+      if (!parsed) throw new Error('Invalid JSON response');
       setResult(parsed);
     } catch(e) { console.error(e); }
     setLoading(false);
@@ -118,6 +126,7 @@ function AgendaMatchPredictScreen({ match, sport, language, t, onBack }) {
           <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:22,letterSpacing:2}}>KAZMO ANALYSIS</Text>
           <ActivityIndicator color="#FF6B2B" size="large" style={{marginTop:16}}/>
           <View style={{backgroundColor:'#FFD60011',borderRadius:10,paddingHorizontal:16,paddingVertical:8,marginTop:16,borderWidth:1,borderColor:'#FFD60033'}}>
+            <Text style={{color:'#CE93D8',fontFamily:'BebasNeue',fontSize:13,letterSpacing:1,textAlign:'center',marginBottom:8}}>{STATUS_MSGS[msgIdx]}</Text>
             <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:13,letterSpacing:1,textAlign:'center'}}>⏱ UP TO 30 SECONDS</Text>
             <Text style={{color:'#ffffff44',fontSize:10,textAlign:'center',marginTop:4}}>Kazmo is searching real-time data</Text>
           </View>

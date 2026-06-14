@@ -261,7 +261,7 @@ function TeamPickerModal({ sport, onSelect, onClose, title, t, initialLeague, on
   );
 }
 
-function parseJSONRobust(text){
+export function parseJSONRobust(text){
   let clean=text.replace(/```json|```/g,'').trim();
   try{return JSON.parse(clean);}catch(e){}
   const s=clean.indexOf('{'),e=clean.lastIndexOf('}');
