@@ -111,23 +111,29 @@ function AgendaMatchPredictScreen({ match, sport, language, t, onBack }) {
         <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:20,letterSpacing:1}}>{match.away}</Text>
       </View>
       {loading ? (
-        <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
-          <ActivityIndicator color="#FF6B2B" size="large"/>
-          <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1,marginTop:16}}>KAZMO ANALYSIS...</Text>
-          <Text style={{color:'#ffffff44',fontSize:11,marginTop:8}}>This may take up to 30 seconds</Text>
+        <View style={{flex:1,alignItems:'center',justifyContent:'center',padding:24}}>
+          <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:1}} style={{width:80,height:80,borderRadius:40,alignItems:'center',justifyContent:'center',marginBottom:16}}>
+            <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:48}}>K</Text>
+          </LinearGradient>
+          <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:22,letterSpacing:2}}>KAZMO ANALYSIS</Text>
+          <ActivityIndicator color="#FF6B2B" size="large" style={{marginTop:16}}/>
+          <View style={{backgroundColor:'#FFD60011',borderRadius:10,paddingHorizontal:16,paddingVertical:8,marginTop:16,borderWidth:1,borderColor:'#FFD60033'}}>
+            <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:13,letterSpacing:1,textAlign:'center'}}>⏱ UP TO 30 SECONDS</Text>
+            <Text style={{color:'#ffffff44',fontSize:10,textAlign:'center',marginTop:4}}>Kazmo is searching real-time data</Text>
+          </View>
         </View>
       ) : result ? (
         <ScrollView contentContainerStyle={{padding:16}}>
-          {result.winner && (
+          {result.equipe_favoris && (
             <View style={{backgroundColor:'#FF6B2B11',borderRadius:16,padding:20,alignItems:'center',marginBottom:16,borderWidth:1,borderColor:'#FF6B2B33'}}>
               <Text style={{color:'#ffffff88',fontFamily:'BebasNeue',fontSize:11,letterSpacing:2}}>KAZMO PRÉDIT</Text>
-              <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:28,letterSpacing:2,marginTop:4}}>{result.winner}</Text>
-              {result.confidence && (
+              <Text style={{color:'#FF6B2B',fontFamily:'BebasNeue',fontSize:28,letterSpacing:2,marginTop:4}}>{result.equipe_favoris}</Text>
+              {result.pourcentage && (
                 <>
-                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:36,marginTop:8}}>{result.confidence}%</Text>
+                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:36,marginTop:8}}>{result.pourcentage}%</Text>
                   <Text style={{color:'#ffffff55',fontFamily:'BebasNeue',fontSize:11,letterSpacing:1}}>CONFIANCE</Text>
                   <View style={{width:'100%',height:6,backgroundColor:'#ffffff11',borderRadius:3,marginTop:8,overflow:'hidden'}}>
-                    <View style={{width:result.confidence+'%',height:'100%',backgroundColor:'#FF6B2B',borderRadius:3}}/>
+                    <View style={{width:result.pourcentage+'%',height:'100%',backgroundColor:'#FF6B2B',borderRadius:3}}/>
                   </View>
                 </>
               )}
