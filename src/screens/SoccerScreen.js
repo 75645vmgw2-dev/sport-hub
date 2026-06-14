@@ -265,7 +265,7 @@ export default function SoccerScreen({ onBack, user, initialLeague }) {
                 backgroundColor: i%2===0 ? '#16162a' : '#0d0d1a',
                 borderLeftColor: i<2 ? color : '#ffffff14', borderLeftWidth:3,
               }]}
-              onPress={() => setSelectedTeam(t.team)}>
+              onPress={undefined}>
               <View style={[styles.tableTeam, { flex:1 }]}>
                 {t.team.logo ? <Image source={{ uri:t.team.logo }} style={styles.teamLogoSmall} onError={function(){}} /> : null}
                 <Text style={styles.tableTeamName} numberOfLines={1}>{t.team.name}</Text>
@@ -373,7 +373,7 @@ export default function SoccerScreen({ onBack, user, initialLeague }) {
                             backgroundColor: i%2===0 ? '#16162a' : '#0d0d1a',
                             borderLeftColor: i===0 ? '#FFD700' : i<4 ? color : '#ffffff22', borderLeftWidth:3,
                           }]}
-                          onPress={() => setSelectedTeam(t.team)}>
+                          onPress={undefined}>
                           <Text style={[styles.tableCell, { width:24, color:'#ffffff55' }]}>{String(t.rank)}</Text>
                           <View style={[styles.tableTeam, { flex:1 }]}>
                             {t.team.logo ? <Image source={{ uri:t.team.logo }} style={styles.teamLogoSmall} onError={function(){}} /> : null}
