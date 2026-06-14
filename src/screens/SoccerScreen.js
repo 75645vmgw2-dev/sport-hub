@@ -25,8 +25,14 @@ const FS = SEASONS.FOOTBALL;
 
 export default function SoccerScreen({ onBack, user, initialLeague }) {
   const { t } = useLanguage();
-  const WC_COUNTRY = initialLeague === 'wc' ? { id:'wc', name:'FIFA World Cup 2026', flag:'🌍', color:'#006341', leagues:[{ id:'wc2026', name:'FIFA World Cup 2026', leagueId:1, season:2026, color:'#006341' }] } : null;
+  const WC_COUNTRY = initialLeague === 'wc' ? { id:'wc', name:'FIFA World Cup 2026', flag:'🌍', color:'#006341', leagues:[{ id:'wc', name:'FIFA World Cup 2026', leagueId:1, season:2026, color:'#006341' }] } : null;
   const [selectedCountry, setSelectedCountry] = useState(WC_COUNTRY);
+  const [selectedLeague, setSelectedLeague] = useState(null);
+  React.useEffect(function() {
+    if (WC_COUNTRY && WC_COUNTRY.leagues.length === 1) {
+      selectLeague(WC_COUNTRY.leagues[0]);
+    }
+  }, []);
   const COUNTRIES = [
     {
       id: 'europe', name: t('europeanCompetitions'), flag: '⭐', color: '#1a1aff',
@@ -85,7 +91,6 @@ export default function SoccerScreen({ onBack, user, initialLeague }) {
   
   const WC_LEAGUE = { id:'wc', name:'Coupe du Monde 2026', leagueId:1, season:2026, color:'#006341' };
 
-  const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [tab, setTab] = useState('matchs');
   const [fixtures, setFixtures] = useState([]);
@@ -186,7 +191,8 @@ export default function SoccerScreen({ onBack, user, initialLeague }) {
   }
 
   if (selectedTeam) {
-    return <SoccerTeamScreen team={selectedTeam} league={selectedLeague} onBack={() => setSelectedTeam(null)} />;
+    const leagueForTeam = selectedLeague || (WC_COUNTRY ? WC_COUNTRY.leagues[0] : null);
+    return <SoccerTeamScreen team={selectedTeam} league={leagueForTeam} onBack={() => setSelectedTeam(null)} />;
   }
 
   if (selectedMatch) {
