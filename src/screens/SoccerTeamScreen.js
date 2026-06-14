@@ -58,7 +58,7 @@ export default function SoccerTeamScreen({ team, league, onBack }) {
       setUpcomingGames(upcomingData.response || []);
       setPlayers((playersData.response || []).slice(0, 20));
       setInjuries(injuriesData.response || []);
-    } catch(e) {}
+    } catch(e) { console.error('SoccerTeamScreen error:', e.message, e); alert('Error: ' + e.message); }
     finally { setLoading(false); }
   }
 
