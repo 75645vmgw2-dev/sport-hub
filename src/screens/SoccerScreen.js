@@ -245,6 +245,13 @@ export default function SoccerScreen({ onBack, user, initialLeague }) {
 
   function GroupTable({ group }) {
     const groupName = group[0]?.group || 'Groupe';
+    // Dédupliquer par team.id
+    const seen = {};
+    const group_dedup = group.filter(function(t) {
+      if (seen[t.team.id]) return false;
+      seen[t.team.id] = true;
+      return true;
+    });
     const color = selectedLeague?.color || '#006341';
     return (
       <View style={styles.groupCard}>
@@ -258,7 +265,7 @@ export default function SoccerScreen({ onBack, user, initialLeague }) {
           <Text style={[styles.tableHeaderText, { width:28 }]}>Pts</Text>
           <Text style={[styles.tableHeaderText, { width:32 }]}>★</Text>
         </View>
-        {group.map(function(t, i) {
+        {group_dedup.map(function(t, i) {
           return (
             <TouchableOpacity key={i}
               style={[styles.tableRow, {
