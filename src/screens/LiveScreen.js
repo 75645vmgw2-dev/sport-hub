@@ -221,6 +221,7 @@ export default function LiveScreen({ onSelectSport }) {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState(null);
+  const [showF1, setShowF1] = useState(false);
   const [sportFilter, setSportFilter] = useState('all');
 
   const now = new Date();
@@ -419,13 +420,7 @@ export default function LiveScreen({ onSelectSport }) {
   // Adapter le golf pour MatchDetailScreen
   function handleGamePress(g) {
     if (g.sportKey === 'F1') {
-      setSelectedGame({
-        ...g,
-        home: g.raceName || 'Formula 1',
-        away: g.circuit || g.country || '',
-        sport: 'F1',
-        sportKey: 'F1',
-      });
+      setShowF1(true);
       return;
     }
     if (g.sportKey === 'GOLF') {
@@ -441,6 +436,16 @@ export default function LiveScreen({ onSelectSport }) {
     }
   }
 
+  if (showF1) {
+    return (
+      <View style={{flex:1}}>
+        <F1Screen onBack={()=>setShowF1(false)} />
+        <TouchableOpacity onPress={()=>setShowF1(false)} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>← {t('allMatches')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   if (selectedGame) {
     return (
       <View style={{ flex:1 }}>
