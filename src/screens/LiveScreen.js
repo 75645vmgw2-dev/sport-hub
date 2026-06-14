@@ -418,8 +418,11 @@ export default function LiveScreen({ onSelectSport }) {
 
   // Adapter le golf pour MatchDetailScreen
   function handleGamePress(g) {
+    if (g.sportKey === 'F1') {
+      onSelectSport && onSelectSport({ id:'f1', name:'F1', icon:'🏎', color:'#E10600', initialTab:'races' });
+      return;
+    }
     if (g.sportKey === 'GOLF') {
-      // Passer les données du tournoi comme un "match" pour MatchDetailScreen
       setSelectedGame({
         ...g,
         home: g.tournamentName || 'Golf PGA Tour',
