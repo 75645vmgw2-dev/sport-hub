@@ -419,7 +419,13 @@ export default function LiveScreen({ onSelectSport }) {
   // Adapter le golf pour MatchDetailScreen
   function handleGamePress(g) {
     if (g.sportKey === 'F1') {
-      onSelectSport && onSelectSport({ id:'f1', name:'F1', icon:'🏎', color:'#E10600', initialTab:'races' });
+      setSelectedGame({
+        ...g,
+        home: g.raceName || 'Formula 1',
+        away: g.circuit || g.country || '',
+        sport: 'F1',
+        sportKey: 'F1',
+      });
       return;
     }
     if (g.sportKey === 'GOLF') {
