@@ -113,6 +113,8 @@ export default function AgendaScreen() {
   const [predictions, setPredictions] = useState({});
   const [loadingPredictions, setLoadingPredictions] = useState(false);
   const [predictionsTab, setPredictionsTab] = useState(false);
+  const [predPage, setPredPage] = useState(0);
+  const PRED_PAGE_SIZE = 15;
   const [dynamicEvents, setDynamicEvents] = useState([]);
   const [filtersReady, setFiltersReady] = useState(false);
 
@@ -316,12 +318,13 @@ export default function AgendaScreen() {
     });
   }
 
-  async function fetchPredictions(forcedTab) {
+  async function fetchPredictions(forcedTab, page) {
+    const currentPage = page || 0;
     const predTab = forcedTab || (tab==='24h'||tab==='72h' ? tab : '24h');
     setLoadingPredictions(true);
     try {
       // Vérifier le cache Supabase (6h max)
-      const cacheKey = predTab + '_' + new Date().toISOString().slice(0,13);
+      const cacheKey = predTab + '_p' + currentPage + '_' + new Date().toISOString().slice(0,13);
       let cached = null;
       try {
         const { data: c } = await supabase.from('agenda_predictions_cache')
@@ -433,7 +436,7 @@ export default function AgendaScreen() {
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
+      <View style={styles.filtersScroll}>
         <View style={styles.filtersRow}>
           {SPORT_FILTERS.map(function(f) {
             const active = sportFilter===f.id;
@@ -448,7 +451,7 @@ export default function AgendaScreen() {
             );
           })}
         </View>
-      </ScrollView>
+      </View>
 
       {predictionsTab && (tab==='24h'||tab==='72h') ? (
         <ScrollView contentContainerStyle={{padding:16,paddingBottom:40}}>
@@ -456,7 +459,7 @@ export default function AgendaScreen() {
             <Text style={{color:'#CE93D8',fontFamily:'BebasNeue',fontSize:11,letterSpacing:1,marginBottom:4}}>⚡ KAZMO AI ESTIMATES</Text>
             <Text style={{color:'#ffffff66',fontSize:11,lineHeight:16}}>Quick predictions based on team data. For deeper analysis, use Kazmo Predict.</Text>
             {!loadingPredictions && Object.keys(predictions).length === 0 && (
-              <TouchableOpacity onPress={()=>fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h')} activeOpacity={0.85} style={{marginTop:10}}>
+              <TouchableOpacity onPress={()=>{setPredPage(0);setPredictions({});fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h',0);}} activeOpacity={0.85} style={{marginTop:10}}>
                 <LinearGradient colors={['#7B1FA2','#CE93D8']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:10,padding:12,alignItems:'center'}}>
                   <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:14,letterSpacing:1}}>🔮 GENERATE PREDICTIONS</Text>
                 </LinearGradient>
@@ -495,9 +498,10 @@ export default function AgendaScreen() {
             );
           })}
           {Object.keys(predictions).length > 0 && (
-            <TouchableOpacity onPress={()=>fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h')} style={{marginTop:8,alignItems:'center',padding:10}}>
-              <Text style={{color:'#9C27B0',fontSize:12,fontFamily:'BebasNeue',letterSpacing:1}}>↻ REFRESH PREDICTIONS</Text>
-            </TouchableOpacity>
+            <View style={{flexDirection:'row',gap:8,marginTop:8,justifyContent:'center'}}>
+              {predPage > 0 && <TouchableOpacity onPress={()=>{const p=predPage-1;setPredPage(p);setPredictions({});fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h',p);}} style={{padding:10,backgroundColor:'#9C27B011',borderRadius:10,borderWidth:1,borderColor:'#9C27B033'}}><Text style={{color:'#9C27B0',fontSize:12,fontFamily:'BebasNeue'}}>← PREV 15</Text></TouchableOpacity>}
+              <TouchableOpacity onPress={()=>{const p=predPage+1;setPredPage(p);setPredictions({});fetchPredictions(tab==='24h'||tab==='72h'?tab:'24h',p);}} style={{padding:10,backgroundColor:'#9C27B011',borderRadius:10,borderWidth:1,borderColor:'#9C27B033'}}><Text style={{color:'#9C27B0',fontSize:12,fontFamily:'BebasNeue'}}>NEXT 15 →</Text></TouchableOpacity>
+            </View>
           )}
         </ScrollView>
       ) : loading ? (
@@ -592,8 +596,8 @@ const styles = StyleSheet.create({
   tabBar: { flexDirection:'row', gap:6 },
   tabBtn: { paddingHorizontal:16, paddingVertical:8, borderRadius:10, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   tabBtnText: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:12, letterSpacing:0.5 },
-  filtersScroll: { marginHorizontal:16, marginBottom:8, overflow:'visible' },
-  filtersRow: { flexDirection:'row', gap:6, paddingRight:16 },
+  filtersScroll: { marginHorizontal:16, marginBottom:8 },
+  filtersRow: { flexDirection:'row', flexWrap:'wrap', gap:6, paddingBottom:4 },
   filterBtn: { flexDirection:'row', alignItems:'center', gap:4, paddingHorizontal:12, paddingVertical:7, borderRadius:20, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   filterBtnActive: { backgroundColor:'#FF6B2B', borderColor:'#FF6B2B' },
   filterBtnWC: { borderColor:'#006341' },
