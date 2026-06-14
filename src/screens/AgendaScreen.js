@@ -353,7 +353,11 @@ export default function AgendaScreen() {
       const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
       const predsMap = {};
       (parsed.predictions||[]).forEach(function(p, i) {
-        if (upcoming[i]) predsMap[upcoming[i].id] = p;
+        if (upcoming[i]) {
+          const key = upcoming[i].id || ('match_'+i);
+          predsMap[key] = p;
+          predsMap['pos_'+i] = p; // Index par position aussi
+        }
       });
       setPredictions(predsMap);
       // Sauvegarder dans le cache
@@ -412,7 +416,7 @@ export default function AgendaScreen() {
       {/* Bannière Coupe du Monde */}
       <WorldCupBanner onPress={() => setSportFilter('wc')} />
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScrollView}>
+      <View style={styles.tabScrollView}>
         <View style={styles.tabBar}>
           {TABS.map(function(tb) {
             return (
@@ -427,7 +431,7 @@ export default function AgendaScreen() {
             </TouchableOpacity>
           )}
         </View>
-      </ScrollView>
+      </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
         <View style={styles.filtersRow}>
@@ -466,7 +470,8 @@ export default function AgendaScreen() {
             )}
           </View>
           {getFilteredEvents().filter(function(e){return !e.isFinished&&!e.isLive;}).map(function(e,i){
-            const pred = predictions[e.id];
+            const eIdx = getFilteredEvents().filter(function(ev){return !ev.isFinished&&!ev.isLive;}).findIndex(function(ev){return ev.id===e.id;});
+            const pred = predictions[e.id] || predictions['pos_'+eIdx];
             const d = new Date(e.date);
             const timeStr = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
             return (
@@ -583,7 +588,7 @@ const styles = StyleSheet.create({
   header: { padding:20, paddingBottom:8 },
   titleRow: { flexDirection:'row', alignItems:'center' },
   titleWhite: { fontSize:22, color:'#fff', fontFamily:'BebasNeue', letterSpacing:1 },
-  tabScrollView: { marginHorizontal:16, marginBottom:4 },
+  tabScrollView: { marginHorizontal:16, marginBottom:4, overflow:'visible' },
   tabBar: { flexDirection:'row', gap:6 },
   tabBtn: { paddingHorizontal:16, paddingVertical:8, borderRadius:10, backgroundColor:'#16162a', borderWidth:1, borderColor:'#ffffff22' },
   tabBtnText: { color:'#ffffffcc', fontFamily:'BebasNeue', fontSize:12, letterSpacing:0.5 },
