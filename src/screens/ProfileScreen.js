@@ -12,6 +12,7 @@ import { LANGUAGES } from '../i18n/translations';
 import AdminScreen from './AdminScreen';
 import FAQScreen from './FAQScreen';
 import BetsScreen from './BetsScreen';
+import SubscriptionScreen from './SubscriptionScreen';
 
 function GradientText({ text, fontSize, letterSpacing }) {
   return (
@@ -53,6 +54,7 @@ export default function ProfileScreen({ user, onLogout }) {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showBets, setShowBets] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [form, setForm] = useState({ first_name:'', last_name:'', username:'', country:'' });
   const [userVotes, setUserVotes] = useState([]);
@@ -181,6 +183,7 @@ export default function ProfileScreen({ user, onLogout }) {
   if (showAdmin) return <AdminScreen onClose={()=>setShowAdmin(false)} adminUser={user} />;
   if (showFAQ) return <FAQScreen user={user} onBack={()=>setShowFAQ(false)} />;
   if (showBets) return <BetsScreen user={user} onBack={()=>setShowBets(false)} />;
+  if (showSubscription) return <SubscriptionScreen currentPlan='free' onBack={()=>setShowSubscription(false)} />;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -240,6 +243,17 @@ export default function ProfileScreen({ user, onLogout }) {
               )}
             </View>
 
+            {/* MON PLAN */}
+            <TouchableOpacity onPress={()=>setShowSubscription(true)} style={{marginBottom:12}}>
+              <LinearGradient colors={['#9C27B022','#FF6B2B22']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:14,padding:14,flexDirection:'row',alignItems:'center',borderWidth:1,borderColor:'#9C27B044'}}>
+                <Text style={{fontSize:24,marginRight:12}}>⭐</Text>
+                <View style={{flex:1}}>
+                  <Text style={{color:'#CE93D8',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1}}>My Plan</Text>
+                  <Text style={{color:'#ffffff66',fontSize:11,marginTop:2}}>Free — Upgrade to unlock all features</Text>
+                </View>
+                <Text style={{color:'#CE93D8',fontSize:18}}>›</Text>
+              </LinearGradient>
+            </TouchableOpacity>
             {/* MES PARIS */}
             <TouchableOpacity activeOpacity={0.85} onPress={()=>setShowBets(true)} style={{marginBottom:12}}>
               <LinearGradient colors={['#FFD70022','#FF6B2B22']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:14,padding:14,flexDirection:'row',alignItems:'center',borderWidth:1,borderColor:'#FFD70044'}}>
