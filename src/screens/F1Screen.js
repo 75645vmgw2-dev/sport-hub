@@ -1,3 +1,4 @@
+import { supabase } from '../api/supabase';
 import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Image, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
@@ -227,8 +228,24 @@ function F1RaceResultScreen({ race, onBack, t, language, onSelectDriver }) {
   );
 }
 
-function F1TeamScreen({ team, races, onBack, t, language }) {
+function F1TeamScreen({ team, races, onBack, t, language, user }) {
   const [loading, setLoading] = useState(true);
+  const [isFav, setIsFav] = useState(false);
+  React.useEffect(function() {
+    if (!user) return;
+    supabase.from('favorites').select('id').eq('user_id', user.id).eq('sport', 'f1_team').eq('team_name', team.name).single()
+      .then(function({data}) { setIsFav(!!data); });
+  }, []);
+  async function toggleFav() {
+    if (!user) return;
+    if (isFav) {
+      await supabase.from('favorites').delete().eq('user_id', user.id).eq('sport', 'f1_team').eq('team_name', team.name);
+      setIsFav(false);
+    } else {
+      await supabase.from('favorites').insert({ user_id: user.id, sport: 'f1_team', team_name: team.name, team_id: team.id, team_logo: team.logo||null });
+      setIsFav(true);
+    }
+  }
   const [recentResults, setRecentResults] = useState([]);
   const [tab, setTab] = useState('info');
   const [nbMatchs, setNbMatchs] = useState(5);
@@ -395,8 +412,24 @@ function F1TeamScreen({ team, races, onBack, t, language }) {
   );
 }
 
-function F1DriverScreen({ driver, races, onBack, t, language }) {
+function F1DriverScreen({ driver, races, onBack, t, language, user }) {
   const [loading, setLoading] = useState(true);
+  const [isFav, setIsFav] = useState(false);
+  React.useEffect(function() {
+    if (!user) return;
+    supabase.from('favorites').select('id').eq('user_id', user.id).eq('sport', 'f1').eq('team_name', driver.name).single()
+      .then(function({data}) { setIsFav(!!data); });
+  }, []);
+  async function toggleFav() {
+    if (!user) return;
+    if (isFav) {
+      await supabase.from('favorites').delete().eq('user_id', user.id).eq('sport', 'f1').eq('team_name', driver.name);
+      setIsFav(false);
+    } else {
+      await supabase.from('favorites').insert({ user_id: user.id, sport: 'f1', team_name: driver.name, team_id: driver.id, team_logo: driver.photo||null });
+      setIsFav(true);
+    }
+  }
   const [recentResults, setRecentResults] = useState([]);
   const [tab, setTab] = useState('info');
   const [nbMatchs, setNbMatchs] = useState(5);
@@ -626,11 +659,11 @@ export default function F1Screen({ onBack, user, initialTab }) {
   }
 
   if (selectedDriver) {
-    return <F1DriverScreen driver={selectedDriver} races={races} onBack={() => setSelectedDriver(null)} t={t} language={language} />;
+    return <F1DriverScreen driver={selectedDriver} races={races} onBack={() => setSelectedDriver(null)} t={t} language={language} user={user} />;
   }
 
   if (selectedTeam) {
-    return <F1TeamScreen team={selectedTeam} races={races} onBack={() => setSelectedTeam(null)} t={t} language={language} />;
+    return <F1TeamScreen team={selectedTeam} races={races} onBack={() => setSelectedTeam(null)} t={t} language={language} user={user} />;
   }
 
   if (selectedRace) {

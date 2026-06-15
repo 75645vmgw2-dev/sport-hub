@@ -461,7 +461,8 @@ export default function LiveScreen({ onSelectSport }) {
   const filteredGames = sportFilter === 'all' ? games : games.filter(function(g) { return g.sportKey === sportFilter; });
   const liveGames = filteredGames.filter(function(g) { return g.isLive; });
   const upcomingGames = filteredGames.filter(function(g) { return !g.isLive && !g.isFinished; });
-  const finishedGames = filteredGames.filter(function(g) { return g.isFinished; });
+  const now24h = new Date(Date.now() - 24*3600000);
+  const finishedGames = filteredGames.filter(function(g) { return g.isFinished && (!g.date || new Date(g.date) >= now24h); });
 
   return (
     <SafeAreaView style={styles.container}>

@@ -582,7 +582,7 @@ function ConseilsGuides({ t, language }) {
             <Text style={styles.stepTitle}>{requiresOpponent ? t('twoTeams') : t('chooseTeam')}</Text>
           </View>
           {(selectedSport.id==='nba'||selectedSport.id==='soccer') && (
-            <View style={styles.realDataBadge}><Text style={styles.realDataText}>✅ Données réelles API — {selectedSport.label}</Text></View>
+            <View style={styles.realDataBadge}><Text style={styles.realDataText}>✅ Real API Data — {selectedSport.label}</Text></View>
           )}
 
           {/* Équipe 1 avec micro */}

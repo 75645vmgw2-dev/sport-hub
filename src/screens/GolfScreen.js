@@ -124,7 +124,23 @@ function PlayerSearchModal({ rankings, onSelect, onClose }) {
 }
 
 // ============ PLAYER SCREEN ============
-function GolfPlayerScreen({ player, schedule, onBack }) {
+function GolfPlayerScreen({ player, schedule, onBack, user }) {
+  const [isFav, setIsFav] = React.useState(false);
+  React.useEffect(function() {
+    if (!user) return;
+    supabase.from('favorites').select('id').eq('user_id', user.id).eq('sport', 'golf').eq('team_name', player.name).single()
+      .then(function({data}) { setIsFav(!!data); });
+  }, []);
+  async function toggleFav() {
+    if (!user) return;
+    if (isFav) {
+      await supabase.from('favorites').delete().eq('user_id', user.id).eq('sport', 'golf').eq('team_name', player.name);
+      setIsFav(false);
+    } else {
+      await supabase.from('favorites').insert({ user_id: user.id, sport: 'golf', team_name: player.name, team_id: player.playerId||player.id, team_logo: null });
+      setIsFav(true);
+    }
+  }
   const [loading, setLoading] = useState(true);
   const [recentTournaments, setRecentTournaments] = useState([]);
   const [kazmoAnalysis, setKazmoAnalysis] = useState('');
@@ -475,7 +491,7 @@ export default function GolfScreen({ onBack, user }) {
   }
 
   if (selectedPlayer) {
-    return <GolfPlayerScreen player={selectedPlayer} schedule={schedule} onBack={() => setSelectedPlayer(null)} />;
+    return <GolfPlayerScreen player={selectedPlayer} schedule={schedule} onBack={() => setSelectedPlayer(null)} user={user} />;
   }
 
   return (

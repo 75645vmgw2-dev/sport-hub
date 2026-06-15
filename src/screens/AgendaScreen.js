@@ -342,7 +342,7 @@ export default function AgendaScreen({ userPlan='free', user }) {
         const endTsAdj = endTs + 86400000; // +1 jour pour couvrir toute la journée finale
         const isLive = startTs<=nowTs&&endTsAdj>=nowTs;
         const isFinished = endTsAdj<nowTs;
-        results.push({ id:'golf-'+tg.tournId, sport:'golf', icon:'⛳', competition:'PGA Tour', round:tg.name||'Golf', home:tg.name||'Tournament', homeLogo:null, away:tg.course?.name||'', awayLogo:null, homeId:null, awayId:null, homeScore:null, awayScore:null, date:start.toISOString(), venue:tg.course?.name||null, city:null, isLive, isFinished, status:isLive?'LIVE':isFinished?'FT':'NS', sportKey:'GOLF' });
+        results.push({ id:'golf-'+tg.tournId, sport:'golf', icon:'⛳', competition:'PGA Tour', round:tg.name||'Golf', home:tg.name||'Tournament', homeLogo:null, away:tg.course?.name||'', awayLogo:null, homeId:null, awayId:null, homeScore:null, awayScore:null, date:isFinished?new Date(endTsAdj).toISOString():start.toISOString(), venue:tg.course?.name||null, city:null, isLive, isFinished, status:isLive?'LIVE':isFinished?'FT':'NS', sportKey:'GOLF' });
       });
     } catch(e) {}
 

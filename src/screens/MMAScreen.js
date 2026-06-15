@@ -30,7 +30,30 @@ function GradientText({ text, fontSize, letterSpacing }) {
   );
 }
 
-function FightDetailScreen({ fight, onBack, t, locale }) {
+function FightDetailScreen({ fight, onBack, t, locale, user }) {
+  const fighter1 = fight.fighters?.first?.name || 'Fighter 1';
+  const fighter2 = fight.fighters?.second?.name || 'Fighter 2';
+  const [isFav1, setIsFav1] = React.useState(false);
+  const [isFav2, setIsFav2] = React.useState(false);
+  React.useEffect(function() {
+    if (!user) return;
+    supabase.from('favorites').select('id,team_name').eq('user_id', user.id).eq('sport', 'mma')
+      .then(function({data}) {
+        const names = (data||[]).map(function(f){return f.team_name;});
+        setIsFav1(names.includes(fighter1));
+        setIsFav2(names.includes(fighter2));
+      });
+  }, []);
+  async function toggleFav(name, isFav, setFav) {
+    if (!user) return;
+    if (isFav) {
+      await supabase.from('favorites').delete().eq('user_id', user.id).eq('sport', 'mma').eq('team_name', name);
+      setFav(false);
+    } else {
+      await supabase.from('favorites').insert({ user_id: user.id, sport: 'mma', team_name: name, team_id: null, team_logo: null });
+      setFav(true);
+    }
+  }
   const [tab, setTab] = useState('stats');
   const [kazmoAnalysis, setKazmoAnalysis] = useState('');
   const [loadingKazmo, setLoadingKazmo] = useState(false);
@@ -146,6 +169,9 @@ function FightDetailScreen({ fight, onBack, t, locale }) {
               )}
               <Text style={[styles.fighterNameBig, winner===f1?.name&&{color:'#FFD700'}]} numberOfLines={2}>{f1?.name||'Fighter 1'}</Text>
               {winner===f1?.name && <Text style={styles.winnerLabel}>🏆 {t('win')}</Text>}
+              <TouchableOpacity onPress={()=>toggleFav(fighter1,isFav1,setIsFav1)} style={{marginTop:4}}>
+                <Text style={{fontSize:18,color:isFav1?'#FFD700':'#ffffff33'}}>★</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.fightBannerCenter}>
               <Text style={styles.vsBig}>VS</Text>
@@ -166,6 +192,9 @@ function FightDetailScreen({ fight, onBack, t, locale }) {
               )}
               <Text style={[styles.fighterNameBig,{textAlign:'right'}, winner===f2?.name&&{color:'#FFD700'}]} numberOfLines={2}>{f2?.name||'Fighter 2'}</Text>
               {winner===f2?.name && <Text style={[styles.winnerLabel,{alignSelf:'flex-end'}]}>🏆 {t('win')}</Text>}
+              <TouchableOpacity onPress={()=>toggleFav(fighter2,isFav2,setIsFav2)} style={{marginTop:4,alignSelf:'flex-end'}}>
+                <Text style={{fontSize:18,color:isFav2?'#FFD700':'#ffffff33'}}>★</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -312,6 +341,7 @@ export default function MMAScreen({ onBack, user }) {
   const { t, language } = useLanguage();
   const locale = LANG_LOCALE[language] || 'en-US';
   const [tab, setTab] = useState('upcoming');
+  const [sortBy, setSortBy] = useState('date');
   const [upcomingFights, setUpcomingFights] = useState([]);
   const [finishedFights, setFinishedFights] = useState([]);
   const [liveFights, setLiveFights] = useState([]);
@@ -354,7 +384,7 @@ export default function MMAScreen({ onBack, user }) {
   }, []);
 
   if (selectedFight) {
-    return <FightDetailScreen fight={selectedFight} onBack={() => setSelectedFight(null)} t={t} locale={locale} />;
+    return <FightDetailScreen fight={selectedFight} onBack={() => setSelectedFight(null)} t={t} locale={locale} user={user} />;
   }
 
   function FightCard({ f }) {
@@ -409,7 +439,15 @@ export default function MMAScreen({ onBack, user }) {
     );
   }
 
-  const displayFights = tab==='upcoming' ? upcomingFights : tab==='live' ? liveFights : finishedFights;
+  const sortedFinished = [...finishedFights].sort(function(a,b){
+    if (sortBy === 'name') {
+      const nameA = (a.fighters?.first?.name||'').toLowerCase();
+      const nameB = (b.fighters?.first?.name||'').toLowerCase();
+      return nameA.localeCompare(nameB);
+    }
+    return new Date(b.date) - new Date(a.date);
+  });
+  const displayFights = tab==='upcoming' ? upcomingFights : tab==='live' ? liveFights : sortedFinished;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -423,6 +461,16 @@ export default function MMAScreen({ onBack, user }) {
         </View>
         <Text style={styles.subtitle}>
           {upcomingFights.length} {t('upcoming').toLowerCase()} · {finishedFights.length} {t('finished').toLowerCase()}
+          {tab==='finished' && (
+            <View style={{flexDirection:'row',gap:6,marginTop:8}}>
+              <TouchableOpacity onPress={()=>setSortBy('date')} style={{paddingHorizontal:10,paddingVertical:4,borderRadius:8,backgroundColor:sortBy==='date'?'#9C27B0':'#16162a',borderWidth:1,borderColor:'#9C27B033'}}>
+                <Text style={{color:sortBy==='date'?'#fff':'#ffffff88',fontSize:11,fontFamily:'BebasNeue'}}>📅 DATE</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={()=>setSortBy('name')} style={{paddingHorizontal:10,paddingVertical:4,borderRadius:8,backgroundColor:sortBy==='name'?'#9C27B0':'#16162a',borderWidth:1,borderColor:'#9C27B033'}}>
+                <Text style={{color:sortBy==='name'?'#fff':'#ffffff88',fontSize:11,fontFamily:'BebasNeue'}}>🔤 NAME</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </Text>
       </View>
 
