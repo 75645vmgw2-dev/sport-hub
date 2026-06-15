@@ -23,9 +23,9 @@ const PLANS = [
   },
   {
     id: 'planA',
-    name: 'Plan A',
+    name: 'KAZMO Pro',
     monthlyPrice: '$14.99',
-    yearlyPrice: '$149.90',
+    yearlyPrice: '$149.99',
     yearlyNote: 'Save 2 months',
     color: '#FF6B2B',
     borderColor: '#FF6B2B',
@@ -33,18 +33,18 @@ const PLANS = [
       '✅ Everything in Free',
       '✅ Unlimited Kazmo Predictions',
       '✅ 1 bet in My Bets',
-      '🔒 Kazmo Predict in Schedule (Plan B)',
+      '🔒 Kazmo Predict in Schedule (Elite only)',
     ],
   },
   {
     id: 'planB',
-    name: 'Plan B',
+    name: 'KAZMO Elite',
     monthlyPrice: '$49.99',
     yearlyPrice: null,
     color: '#FFD700',
     borderColor: '#FFD700',
     features: [
-      '✅ Everything in Plan A',
+      '✅ Everything in KAZMO Pro',
       '✅ Kazmo Predict on every match',
       '✅ Unlimited bet tracking',
       '✅ Full My Bets access',
@@ -128,7 +128,7 @@ export default function SubscriptionScreen({ currentPlan, onBack, onSelectPlan }
                     style={styles.subscribeBtn}>
                     {loading ? <ActivityIndicator color="#fff" size="small"/> :
                       <Text style={styles.subscribeBtnText}>
-                        {plan.id==='planA'?'Start 7-day free trial':'Upgrade to Plan B'}
+                        {plan.id==='planA'?'Start 7-day free trial':'Upgrade to KAZMO Elite'}
                       </Text>
                     }
                   </LinearGradient>
