@@ -21,13 +21,28 @@ function calcProfit(odds, oddsFormat, stake, result) {
   if (result === 'lost') return (-parseFloat(stake)).toFixed(2);
   return 0;
 }
-export default function BetsScreen({ user, onBack }) {
+export default function BetsScreen({ user, onBack, userPlan='free' }) {
   const { t } = useLanguage();
   const [bets, setBets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingBet, setEditingBet] = useState(null);
   const [filterResult, setFilterResult] = useState('all');
+
+  if (userPlan === 'free') {
+    return (
+      <SafeAreaView style={{flex:1,backgroundColor:'#080814',alignItems:'center',justifyContent:'center',padding:24}}>
+        <Text style={{fontSize:40,marginBottom:16}}>📊</Text>
+        <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:24,letterSpacing:2,marginBottom:8,textAlign:'center'}}>KAZMO PRO FEATURE</Text>
+        <Text style={{color:'#ffffff88',fontSize:13,textAlign:'center',marginBottom:24,lineHeight:20}}>Bet tracking is available with KAZMO Pro or Elite. Upgrade to track your bets and analyze your performance.</Text>
+        <TouchableOpacity onPress={onBack} activeOpacity={0.85} style={{borderRadius:14,overflow:'hidden',width:'100%'}}>
+          <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={{padding:16,alignItems:'center',borderRadius:14}}>
+            <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1}}>⭐ UPGRADE TO PRO</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
   const [showDatePicker, setShowDatePicker] = useState(false);
   const emptyLeg = { match_home:'', match_away:'', sport:'Football', odds:'', odds_format:'decimal' };
   const emptyForm = { sport:'Football', match_home:'', match_away:'', bet_type:'Simple', bookmaker:'', odds:'', odds_format:'decimal', stake:'', currency:'USD', result:'pending', notes:'', match_date:new Date().toISOString().slice(0,10), legs:[{...emptyLeg}] };
@@ -53,6 +68,10 @@ export default function BetsScreen({ user, onBack }) {
   }
 
   async function saveBet() {
+    if (userPlan === 'planA' && bets.length >= 1) {
+      Alert.alert('KAZMO Pro', 'Plan A allows 1 bet maximum. Upgrade to KAZMO Elite for unlimited bet tracking.');
+      return;
+    }
     const isCombo = form.bet_type === 'Combiné';
     const finalOdds = isCombo ? calcCombinedOdds(form.legs, form.odds_format) : form.odds;
     if (!form.stake) { Alert.alert('Error', 'Stake is required'); return; }
@@ -60,7 +79,11 @@ export default function BetsScreen({ user, onBack }) {
     if (isCombo && form.legs.filter(l=>l.match_home&&l.odds).length < 2) { Alert.alert('Error', 'A combo bet needs at least 2 matches with odds'); return; }
     try {
       const profit = calcProfit(finalOdds, 'decimal', form.stake, form.result);
-      const isCombo = form.bet_type === 'Combiné';
+      if (userPlan === 'planA' && bets.length >= 1) {
+      Alert.alert('KAZMO Pro', 'Plan A allows 1 bet maximum. Upgrade to KAZMO Elite for unlimited bet tracking.');
+      return;
+    }
+    const isCombo = form.bet_type === 'Combiné';
       const finalOdds = isCombo ? calcCombinedOdds(form.legs, form.odds_format) : form.odds;
       const comboMatch = isCombo ? form.legs.filter(l=>l.match_home).map(l=>l.match_home+(l.match_away?' vs '+l.match_away:'')).join(' | ') : null;
       const data = { ...form, user_id:user.id, match_home:isCombo?(comboMatch||'Combiné'):form.match_home, odds:parseFloat(finalOdds)||1, stake:parseFloat(form.stake), profit_loss:parseFloat(profit) };

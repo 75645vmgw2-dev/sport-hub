@@ -677,8 +677,23 @@ function ConseilsGuides({ t, language }) {
   );
 }
 
-export default function ConseilsScreen() {
+export default function ConseilsScreen({ userPlan='free' }) {
   const { t, language } = useLanguage();
+
+  if (userPlan === 'free') {
+    return (
+      <SafeAreaView style={{flex:1,backgroundColor:'#080814',alignItems:'center',justifyContent:'center',padding:24}}>
+        <Text style={{fontSize:40,marginBottom:16}}>🔮</Text>
+        <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:24,letterSpacing:2,marginBottom:8,textAlign:'center'}}>KAZMO PRO FEATURE</Text>
+        <Text style={{color:'#ffffff88',fontSize:13,textAlign:'center',marginBottom:24,lineHeight:20}}>Tips & Analysis are available with KAZMO Pro or Elite. Upgrade to get unlimited AI sports analysis.</Text>
+        <TouchableOpacity activeOpacity={0.85} style={{borderRadius:14,overflow:'hidden',width:'100%'}}>
+          <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={{padding:16,alignItems:'center',borderRadius:14}}>
+            <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1}}>⭐ UPGRADE TO PRO</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
   const [mainTab, setMainTab] = useState('chat');
 
   return (

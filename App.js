@@ -231,15 +231,15 @@ function AppContent() {
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📺" label={t('tabLive')} focused={focused} /> }}
         />
         <Tab.Screen name="Conseils"
-          component={ConseilsScreen}
+          children={() => <ConseilsScreen userPlan={userPlan} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔮" label={t('tabConseils')} focused={focused} /> }}
         />
         <Tab.Screen name="Agenda"
-          component={AgendaScreen}
+          children={() => <AgendaScreen userPlan={userPlan} user={user} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🗓" label={t('tabAgenda')} focused={focused} /> }}
         />
         <Tab.Screen name="Favoris"
-          children={() => <FavoritesScreen user={user} />}
+          children={() => <FavoritesScreen user={user} userPlan={userPlan} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="⭐" label={t('tabFavorites')} focused={focused} /> }}
         />
         <Tab.Screen name="Profil"

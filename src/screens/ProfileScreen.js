@@ -182,7 +182,7 @@ export default function ProfileScreen({ user, onLogout, userPlan='free', setUser
 
   if (showAdmin) return <AdminScreen onClose={()=>setShowAdmin(false)} adminUser={user} />;
   if (showFAQ) return <FAQScreen user={user} onBack={()=>setShowFAQ(false)} />;
-  if (showBets) return <BetsScreen user={user} onBack={()=>setShowBets(false)} />;
+  if (showBets) return <BetsScreen user={user} onBack={()=>setShowBets(false)} userPlan={userPlan} />;
   if (showSubscription) return <SubscriptionScreen currentPlan={userPlan} setUserPlan={setUserPlan} onBack={()=>setShowSubscription(false)} />;
 
   return (

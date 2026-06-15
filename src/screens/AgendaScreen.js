@@ -204,7 +204,7 @@ function WorldCupBanner({ onPress }) {
   );
 }
 
-export default function AgendaScreen() {
+export default function AgendaScreen({ userPlan='free', user }) {
   const { t, language } = useLanguage();
   const [allEvents, setAllEvents] = useState([]);
   const [loading, setLoading] = useState(true);
