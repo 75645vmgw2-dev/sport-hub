@@ -87,6 +87,7 @@ function AppContent() {
   const [userPlan, setUserPlan] = useState('free');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSubscriptionOnboarding, setShowSubscriptionOnboarding] = useState(false);
+  const [showSubscriptionUpgrade, setShowSubscriptionUpgrade] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const navigationRef = useRef(null);
   const [fontsLoaded] = useFonts({ BebasNeue: BebasNeue_400Regular });
@@ -185,6 +186,9 @@ function AppContent() {
   if (showSubscriptionOnboarding) {
     return <SubscriptionScreen currentPlan='free' setUserPlan={setUserPlan} onBack={()=>setShowSubscriptionOnboarding(false)} />;
   }
+  if (showSubscriptionUpgrade) {
+    return <SubscriptionScreen currentPlan={userPlan} setUserPlan={setUserPlan} onBack={()=>setShowSubscriptionUpgrade(false)} />;
+  }
 
   if (!user) return <AuthScreen onLogin={setUser} onSignup={function(u){setUser(u);setShowOnboarding(true);}} />;
 
@@ -237,7 +241,7 @@ function AppContent() {
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📺" label={t('tabLive')} focused={focused} /> }}
         />
         <Tab.Screen name="Conseils"
-          children={() => <ConseilsScreen userPlan={userPlan} user={user} />}
+          children={() => <ConseilsScreen userPlan={userPlan} user={user} onUpgrade={()=>setShowSubscriptionUpgrade(true)} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔮" label={t('tabConseils')} focused={focused} /> }}
         />
         <Tab.Screen name="Agenda"
@@ -245,7 +249,7 @@ function AppContent() {
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🗓" label={t('tabAgenda')} focused={focused} /> }}
         />
         <Tab.Screen name="Favoris"
-          children={() => <FavoritesScreen user={user} userPlan={userPlan} />}
+          children={() => <FavoritesScreen user={user} userPlan={userPlan} onUpgrade={()=>setShowSubscriptionUpgrade(true)} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="⭐" label={t('tabFavorites')} focused={focused} /> }}
         />
         <Tab.Screen name="Profil"

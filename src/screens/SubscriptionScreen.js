@@ -57,6 +57,7 @@ export default function SubscriptionScreen({ currentPlan, onBack, setUserPlan })
   const { t } = useLanguage();
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loading, setLoading] = useState(false);
+  const [purchased, setPurchased] = useState(null);
 
   async function handleSubscribe(plan) {
     if (plan.id === 'free') return;
@@ -72,12 +73,28 @@ export default function SubscriptionScreen({ currentPlan, onBack, setUserPlan })
       }
       if (pkg) {
         const { customerInfo } = await Purchases.purchasePackage(pkg);
-        if (customerInfo.entitlements.active['plan_b']) { if(setUserPlan) setUserPlan('planB'); }
-        else if (customerInfo.entitlements.active['plan_a']) { if(setUserPlan) setUserPlan('planA'); }
-        onBack();
+        if (customerInfo.entitlements.active['plan_b']) { if(setUserPlan) setUserPlan('planB'); setPurchased('planB'); }
+        else if (customerInfo.entitlements.active['plan_a']) { if(setUserPlan) setUserPlan('planA'); setPurchased('planA'); }
       }
     } catch(e) { if (!e.userCancelled) console.error('Purchase error:', e); }
     setLoading(false);
+  }
+
+  if (purchased) {
+    return (
+      <SafeAreaView style={{flex:1,backgroundColor:'#080814',alignItems:'center',justifyContent:'center',padding:24}}>
+        <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:1}} style={{width:100,height:100,borderRadius:50,alignItems:'center',justifyContent:'center',marginBottom:24}}>
+          <Text style={{fontSize:48}}>⭐</Text>
+        </LinearGradient>
+        <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:28,letterSpacing:2,textAlign:'center',marginBottom:8}}>WELCOME TO {purchased==='planB'?'KAZMO ELITE':'KAZMO PRO'}!</Text>
+        <Text style={{color:'#ffffff88',fontSize:13,textAlign:'center',marginBottom:32,lineHeight:20}}>Your subscription is now active. Enjoy all premium features!</Text>
+        <TouchableOpacity onPress={onBack} activeOpacity={0.85} style={{width:'100%'}}>
+          <LinearGradient colors={['#FF6B2B','#FFD600']} start={{x:0,y:0}} end={{x:1,y:0}} style={{borderRadius:14,padding:16,alignItems:'center'}}>
+            <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1}}>🚀 START EXPLORING</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -154,6 +171,16 @@ export default function SubscriptionScreen({ currentPlan, onBack, setUserPlan })
 
         <Text style={styles.trialNote}>🎁 7-day free trial • Cancel anytime • Billed via Apple/Google</Text>
         <Text style={styles.legalNote}>Subscription renews automatically. Cancel at least 24h before renewal.</Text>
+        <TouchableOpacity onPress={async function(){
+          try {
+            const info = await Purchases.restorePurchases();
+            if (info.entitlements.active['plan_b']) { if(setUserPlan) setUserPlan('planB'); Alert.alert('Restored!', 'KAZMO Elite restored successfully.'); onBack(); }
+            else if (info.entitlements.active['plan_a']) { if(setUserPlan) setUserPlan('planA'); Alert.alert('Restored!', 'KAZMO Pro restored successfully.'); onBack(); }
+            else { Alert.alert('Nothing to restore', 'No active subscription found.'); }
+          } catch(e) { Alert.alert('Error', 'Could not restore purchases.'); }
+        }} style={{marginTop:8,padding:12,alignItems:'center'}}>
+          <Text style={{color:'#ffffff44',fontSize:12,textDecorationLine:'underline'}}>Restore purchases</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

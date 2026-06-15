@@ -56,6 +56,8 @@ export default function ProfileScreen({ user, onLogout, userPlan='free', setUser
   const [showBets, setShowBets] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [referralCode, setReferralCode] = useState('');
+  const [referralCount, setReferralCount] = useState(0);
+  const [freeMonths, setFreeMonths] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [form, setForm] = useState({ first_name:'', last_name:'', username:'', country:'' });
   const [userVotes, setUserVotes] = useState([]);
@@ -309,6 +311,20 @@ export default function ProfileScreen({ user, onLogout, userPlan='free', setUser
             <View style={{backgroundColor:'#16162a',borderRadius:14,padding:16,marginBottom:12,borderWidth:1,borderColor:'#FFD70033'}}>
               <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1,marginBottom:4}}>🎁 MY REFERRAL CODE</Text>
               <Text style={{color:'#ffffff66',fontSize:11,marginBottom:12,lineHeight:16}}>Share your code — your friends get 50% off their first month, and you get 1 free month for every 3 Premium referrals!</Text>
+              <View style={{flexDirection:'row',gap:8,marginBottom:12}}>
+                <View style={{flex:1,backgroundColor:'#0d0d1a',borderRadius:10,padding:10,alignItems:'center',borderWidth:1,borderColor:'#ffffff11'}}>
+                  <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:20}}>{referralCount}</Text>
+                  <Text style={{color:'#ffffff55',fontSize:10,fontFamily:'BebasNeue',letterSpacing:1}}>REFERRALS</Text>
+                </View>
+                <View style={{flex:1,backgroundColor:'#0d0d1a',borderRadius:10,padding:10,alignItems:'center',borderWidth:1,borderColor:'#FFD70022'}}>
+                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:20}}>{freeMonths}</Text>
+                  <Text style={{color:'#ffffff55',fontSize:10,fontFamily:'BebasNeue',letterSpacing:1}}>FREE MONTHS</Text>
+                </View>
+                <View style={{flex:1,backgroundColor:'#0d0d1a',borderRadius:10,padding:10,alignItems:'center',borderWidth:1,borderColor:'#ffffff11'}}>
+                  <Text style={{color:'#4CAF50',fontFamily:'BebasNeue',fontSize:20}}>{3 - (referralCount % 3)}</Text>
+                  <Text style={{color:'#ffffff55',fontSize:10,fontFamily:'BebasNeue',letterSpacing:1}}>UNTIL FREE</Text>
+                </View>
+              </View>
               <View style={{flexDirection:'row',alignItems:'center',gap:8}}>
                 <View style={{flex:1,backgroundColor:'#0d0d1a',borderRadius:10,padding:12,borderWidth:1,borderColor:'#FFD70044'}}>
                   <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:24,letterSpacing:4,textAlign:'center'}}>{referralCode||'...'}</Text>

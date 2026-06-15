@@ -27,7 +27,7 @@ const SPORT_ICONS = {
   soccer:'⚽', f1:'🏎', golf:'⛳', mma:'🤼',
 };
 
-export default function FavoritesScreen({ user, userPlan='free' }) {
+export default function FavoritesScreen({ user, userPlan='free', onUpgrade }) {
   const { t } = useLanguage();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
