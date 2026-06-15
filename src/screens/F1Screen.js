@@ -306,7 +306,7 @@ function F1TeamScreen({ team, races, onBack, t, language }) {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={true}>
         {tab === 'info' && (
           <View>
             <Text style={styles.sectionTitle}>{t('standings').toUpperCase()} 2026</Text>
@@ -475,7 +475,7 @@ function F1DriverScreen({ driver, races, onBack, t, language }) {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={true}>
         {tab === 'info' && (
           <View>
             <Text style={styles.sectionTitle}>{t('standings').toUpperCase()} 2026</Text>
