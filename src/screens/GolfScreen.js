@@ -259,7 +259,7 @@ function GolfPlayerScreen({ player, schedule, onBack }) {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={true}>
 
         {tab === 'info' && (
           <View>
@@ -427,7 +427,7 @@ export default function GolfScreen({ onBack, user }) {
         if (!t.date) return false;
         const start = parseDate(t.date.start);
         const end = parseDate(t.date.end);
-        return start && end && start <= now && end >= now;
+        return start && end && start <= now && (end.getTime() + 86400000) >= now.getTime();
       });
 
       const upcoming = allTournaments.filter(function(t) {
@@ -436,11 +436,12 @@ export default function GolfScreen({ onBack, user }) {
         return start && start > now;
       });
 
+      const currentYear = now.getFullYear();
       const past = allTournaments.filter(function(t) {
         if (!t.date) return false;
         const end = parseDate(t.date.end || t.date.start);
-        return end && end < now;
-      }).reverse().slice(0,5);
+        return end && end < now && end.getFullYear() === currentYear;
+      }).reverse();
 
       setSchedule([...(current?[{...current,isCurrent:true}]:[]), ...upcoming.slice(0,12), ...past]);
       setCurrentTournament(current||null);

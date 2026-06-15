@@ -215,6 +215,9 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
   const [loadingPlayers, setLoadingPlayers] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
   const [loadingNews, setLoadingNews] = useState(false);
+  const [newsChatHistory, setNewsChatHistory] = useState([]);
+  const [newsChatInput, setNewsChatInput] = useState('');
+  const [loadingNewsChat, setLoadingNewsChat] = useState(false);
   const [playersLoaded, setPlayersLoaded] = useState(false);
   const [aiLoaded, setAiLoaded] = useState(false);
 
@@ -258,15 +261,18 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
     } catch(e) { console.error(e); setLoadingPlayers(false); }
   }
 
-  async function callAnthropic(prompt) {
+  async function callAnthropic(prompt, systemPrompt, history) {
+    const messages = history ? [...history] : [{ role:'user', content: prompt }];
+    const body = {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      messages: messages,
+    };
+    if (systemPrompt) body.system = systemPrompt;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: H_ANTHROPIC,
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        messages: [{ role:'user', content: prompt }],
-      }),
+      body: JSON.stringify(body),
     });
     const data = await response.json();
     return (data.content || []).map(function(c) { return c.text || ''; }).join('');
@@ -570,6 +576,21 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
     } catch(e) { console.error(e); }
     setPlayersLoaded(true);
     setLoadingPlayers(false);
+  }
+
+  async function sendNewsChat() {
+    if (!newsChatInput.trim()) return;
+    const question = newsChatInput.trim();
+    setNewsChatInput('');
+    setLoadingNewsChat(true);
+    const newHistory = [...newsChatHistory, {role:'user',content:question}];
+    setNewsChatHistory(newHistory);
+    try {
+      const systemPrompt = 'You are Kazmo, expert sports AI assistant for the match: ' + match.home + ' vs ' + match.away + '. Be concise and accurate. Answer in language: ' + (language||'en') + '.';
+      const text = await callAnthropic(question, systemPrompt, newHistory);
+      setNewsChatHistory(function(prev){return[...prev,{role:'assistant',content:text}];});
+    } catch(e) {}
+    finally { setLoadingNewsChat(false); }
   }
 
   async function fetchNews() {
@@ -919,6 +940,22 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
                 <TouchableOpacity onPress={fetchNews} style={styles.refreshBtn}>
                   <Text style={styles.refreshText}>↻ {t ? t('refresh') : 'Refresh'}</Text>
                 </TouchableOpacity>
+                <Text style={{color:'#ffffff88',fontFamily:'BebasNeue',fontSize:12,letterSpacing:1,marginTop:16,marginBottom:8}}>ASK KAZMO</Text>
+                {newsChatHistory.map(function(msg,i){
+                  const isUser = msg.role==='user';
+                  return(<View key={i} style={[{flexDirection:'row',marginBottom:8,justifyContent:isUser?'flex-end':'flex-start'}]}>
+                    <View style={{maxWidth:'80%',backgroundColor:isUser?'#FF6B2B22':'#16162a',borderRadius:12,padding:10,borderWidth:1,borderColor:isUser?'#FF6B2B44':'#ffffff11'}}>
+                      <Text style={{color:'#ffffffcc',fontSize:12,lineHeight:18}}>{msg.content}</Text>
+                    </View>
+                  </View>);
+                })}
+                {loadingNewsChat && <ActivityIndicator color="#FF6B2B" style={{marginBottom:8}}/>}
+                <View style={{flexDirection:'row',gap:8,marginTop:4}}>
+                  <TextInput value={newsChatInput} onChangeText={setNewsChatInput} style={{flex:1,backgroundColor:'#16162a',borderRadius:10,padding:10,color:'#fff',fontSize:12,borderWidth:1,borderColor:'#ffffff22'}} placeholder="Ask about this match..." placeholderTextColor="#ffffff44" multiline maxLength={200}/>
+                  <TouchableOpacity onPress={sendNewsChat} disabled={loadingNewsChat||!newsChatInput.trim()} style={{backgroundColor:'#FF6B2B',borderRadius:10,padding:10,justifyContent:'center'}}>
+                    <Text style={{color:'#fff',fontSize:14}}>→</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </View>

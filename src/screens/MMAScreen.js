@@ -120,7 +120,7 @@ function FightDetailScreen({ fight, onBack, t, locale }) {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={true}>
 
         <View style={[styles.fightBanner, isLive&&{borderColor:C,borderWidth:1}]}>
           {fight.is_main && (

@@ -162,7 +162,7 @@ export default function SoccerTeamScreen({ team, league, onBack }) {
           <Text style={styles.loadingText}>Chargement...</Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={true}>
 
           {/* FORME */}
           {tab === 'forme' && (
