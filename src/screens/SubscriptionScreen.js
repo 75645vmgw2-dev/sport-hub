@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLanguage } from '../i18n/LanguageContext';
+import Purchases from 'react-native-purchases';
 
 const PLANS = [
   {
@@ -52,7 +53,7 @@ const PLANS = [
   },
 ];
 
-export default function SubscriptionScreen({ currentPlan, onBack, onSelectPlan }) {
+export default function SubscriptionScreen({ currentPlan, onBack, setUserPlan }) {
   const { t } = useLanguage();
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loading, setLoading] = useState(false);
@@ -61,8 +62,21 @@ export default function SubscriptionScreen({ currentPlan, onBack, onSelectPlan }
     if (plan.id === 'free') return;
     setLoading(true);
     try {
-      if (onSelectPlan) await onSelectPlan(plan, billingCycle);
-    } catch(e) {}
+      const offerings = await Purchases.getOfferings();
+      const current = offerings.current;
+      let pkg = null;
+      if (plan.id === 'planA') {
+        pkg = billingCycle === 'yearly' ? current.annual : current.monthly;
+      } else if (plan.id === 'planB') {
+        pkg = current.availablePackages.find(function(p){ return p.identifier === 'elite_monthly'; }) || current.monthly;
+      }
+      if (pkg) {
+        const { customerInfo } = await Purchases.purchasePackage(pkg);
+        if (customerInfo.entitlements.active['plan_b']) { if(setUserPlan) setUserPlan('planB'); }
+        else if (customerInfo.entitlements.active['plan_a']) { if(setUserPlan) setUserPlan('planA'); }
+        onBack();
+      }
+    } catch(e) { if (!e.userCancelled) console.error('Purchase error:', e); }
     setLoading(false);
   }
 

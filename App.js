@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Purchases from 'react-native-purchases';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -82,10 +83,30 @@ function AppContent() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentSport, setCurrentSport] = useState(null);
+  const [userPlan, setUserPlan] = useState('free');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const navigationRef = useRef(null);
   const [fontsLoaded] = useFonts({ BebasNeue: BebasNeue_400Regular });
+
+  useEffect(() => {
+    async function initRevenueCat() {
+      try {
+        // Admins ont accès Elite gratuit
+        const adminEmails = ['jack.melki@mac.com', 'melkijackus@gmail.com'];
+        if (user && adminEmails.includes(user.email)) {
+          setUserPlan('planB');
+          return;
+        }
+        Purchases.configure({ apiKey: 'appl_eXPAcbVJEJcyzNsTcXnHwMENIZX' });
+        const info = await Purchases.getCustomerInfo();
+        if (info.entitlements.active['plan_b']) setUserPlan('planB');
+        else if (info.entitlements.active['plan_a']) setUserPlan('planA');
+        else setUserPlan('free');
+      } catch(e) { console.log('RevenueCat init error:', e); }
+    }
+    initRevenueCat();
+  }, [user]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -222,7 +243,7 @@ function AppContent() {
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="⭐" label={t('tabFavorites')} focused={focused} /> }}
         />
         <Tab.Screen name="Profil"
-          children={() => <ProfileScreen user={user} onLogout={() => setUser(null)} />}
+          children={() => <ProfileScreen user={user} onLogout={() => setUser(null)} userPlan={userPlan} setUserPlan={setUserPlan} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="👤" label={t('tabProfile')} focused={focused} /> }}
         />
       </Tab.Navigator>

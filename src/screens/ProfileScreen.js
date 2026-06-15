@@ -44,7 +44,7 @@ const SPORTS_LIST = [
   { id:'MMA', icon:'🤼', label:'MMA', color:'#9C27B0' },
 ];
 
-export default function ProfileScreen({ user, onLogout }) {
+export default function ProfileScreen({ user, onLogout, userPlan='free', setUserPlan }) {
   const { t, language, changeLanguage } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -183,7 +183,7 @@ export default function ProfileScreen({ user, onLogout }) {
   if (showAdmin) return <AdminScreen onClose={()=>setShowAdmin(false)} adminUser={user} />;
   if (showFAQ) return <FAQScreen user={user} onBack={()=>setShowFAQ(false)} />;
   if (showBets) return <BetsScreen user={user} onBack={()=>setShowBets(false)} />;
-  if (showSubscription) return <SubscriptionScreen currentPlan='free' onBack={()=>setShowSubscription(false)} />;
+  if (showSubscription) return <SubscriptionScreen currentPlan={userPlan} setUserPlan={setUserPlan} onBack={()=>setShowSubscription(false)} />;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -249,7 +249,7 @@ export default function ProfileScreen({ user, onLogout }) {
                 <Text style={{fontSize:24,marginRight:12}}>⭐</Text>
                 <View style={{flex:1}}>
                   <Text style={{color:'#CE93D8',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1}}>My Plan</Text>
-                  <Text style={{color:'#ffffff66',fontSize:11,marginTop:2}}>Free — Upgrade to unlock all features</Text>
+                  <Text style={{color:'#ffffff66',fontSize:11,marginTop:2}}>{userPlan==='free'?'Free — Upgrade to unlock all features':userPlan==='planA'?'KAZMO Pro — Active':'KAZMO Elite — Active'}</Text>
                 </View>
                 <Text style={{color:'#CE93D8',fontSize:18}}>›</Text>
               </LinearGradient>
