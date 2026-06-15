@@ -32,11 +32,12 @@ function getDeviceLanguage() {
 }
 
 // ── Sauvegarde le profil avec la langue ──────────────────────────
-async function saveProfile(userId, email, firstName, lastName, avatarUrl) {
+async function saveProfile(userId, email, firstName, lastName, avatarUrl, referredBy) {
   const lang = getDeviceLanguage();
   await supabase.from('profiles').upsert({
     id: userId,
     email: email || '',
+    referred_by: referredBy || null,
     first_name: firstName || '',
     last_name: lastName || '',
     avatar_url: avatarUrl || null,
@@ -77,6 +78,7 @@ export default function AuthScreen({ onLogin, onSignup }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
   const [loadingApple, setLoadingApple] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingReset, setLoadingReset] = useState(false);
@@ -114,7 +116,7 @@ export default function AuthScreen({ onLogin, onSignup }) {
         const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: 'https://www.kazmo.app/confirm.html' } });
         if (error) throw error;
         if (data.user) {
-          await saveProfile(data.user.id, data.user.email, firstName, lastName, null);
+          await saveProfile(data.user.id, data.user.email, firstName, lastName, null, referralCode.trim().toUpperCase());
           if (onSignup) onSignup(data.user);
           else onLogin(data.user);
         } else {
@@ -295,7 +297,8 @@ export default function AuthScreen({ onLogin, onSignup }) {
         {/* Confirm password — visible uniquement au signup */}
         {!isLogin && (
           <><Text style={styles.fieldLabel}>CONFIRM PASSWORD</Text>
-          <TextInput value={confirmPassword} onChangeText={setConfirmPassword} style={styles.input} placeholder="Confirm password" placeholderTextColor="#ffffff44" secureTextEntry /></>)}
+          <TextInput value={confirmPassword} onChangeText={setConfirmPassword} style={styles.input} placeholder="Confirm password" placeholderTextColor="#ffffff44" secureTextEntry />
+          <TextInput value={referralCode} onChangeText={setReferralCode} style={[styles.input,{borderColor:'#FFD70033'}]} placeholder="Referral code (optional) — get 50% off!" placeholderTextColor="#FFD70066" autoCapitalize="characters" maxLength={8} /></>)}
         {/* Mot de passe oublié — visible uniquement en mode connexion */}
         {isLogin && (
           <TouchableOpacity onPress={() => setShowForgot(true)} style={styles.forgotBtn}>

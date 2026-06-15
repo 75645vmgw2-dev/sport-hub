@@ -55,6 +55,7 @@ export default function ProfileScreen({ user, onLogout, userPlan='free', setUser
   const [showFAQ, setShowFAQ] = useState(false);
   const [showBets, setShowBets] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [form, setForm] = useState({ first_name:'', last_name:'', username:'', country:'' });
   const [userVotes, setUserVotes] = useState([]);
@@ -304,6 +305,19 @@ export default function ProfileScreen({ user, onLogout, userPlan='free', setUser
               </TouchableOpacity>
             </View>
 
+            {/* PARRAINAGE */}
+            <View style={{backgroundColor:'#16162a',borderRadius:14,padding:16,marginBottom:12,borderWidth:1,borderColor:'#FFD70033'}}>
+              <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:16,letterSpacing:1,marginBottom:4}}>🎁 MY REFERRAL CODE</Text>
+              <Text style={{color:'#ffffff66',fontSize:11,marginBottom:12,lineHeight:16}}>Share your code — your friends get 50% off their first month, and you get 1 free month for every 3 Premium referrals!</Text>
+              <View style={{flexDirection:'row',alignItems:'center',gap:8}}>
+                <View style={{flex:1,backgroundColor:'#0d0d1a',borderRadius:10,padding:12,borderWidth:1,borderColor:'#FFD70044'}}>
+                  <Text style={{color:'#FFD700',fontFamily:'BebasNeue',fontSize:24,letterSpacing:4,textAlign:'center'}}>{referralCode||'...'}</Text>
+                </View>
+                <TouchableOpacity onPress={()=>{Clipboard.setString(referralCode);Alert.alert('Copied!','Your referral code has been copied.');}} style={{backgroundColor:'#FFD70022',borderRadius:10,padding:12,borderWidth:1,borderColor:'#FFD70044'}}>
+                  <Text style={{fontSize:20}}>📋</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
             {/* LEGAL */}
             <View style={{flexDirection:'row',gap:8,marginBottom:8}}>
               <TouchableOpacity onPress={()=>Linking.openURL('https://kazmo.app/privacy')} style={{flex:1,backgroundColor:'#ffffff08',borderRadius:10,padding:12,alignItems:'center',borderWidth:1,borderColor:'#ffffff11'}}>
