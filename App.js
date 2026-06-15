@@ -13,6 +13,7 @@ import LiveScreen from './src/screens/LiveScreen';
 import AgendaScreen from './src/screens/AgendaScreen';
 import FavoritesScreen from './src/screens/FavoritesScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import SubscriptionScreen from './src/screens/SubscriptionScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import ConseilsScreen from './src/screens/ConseilsScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -85,6 +86,7 @@ function AppContent() {
   const [currentSport, setCurrentSport] = useState(null);
   const [userPlan, setUserPlan] = useState('free');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSubscriptionOnboarding, setShowSubscriptionOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const navigationRef = useRef(null);
   const [fontsLoaded] = useFonts({ BebasNeue: BebasNeue_400Regular });
@@ -163,6 +165,7 @@ function AppContent() {
       if (setLanguage) setLanguage(selectedLang);
     } catch(e) {}
     setShowOnboarding(false);
+    setShowSubscriptionOnboarding(true);
   }
 
   if (loading || !fontsLoaded || !langLoaded) {
@@ -178,6 +181,9 @@ function AppContent() {
   // Onboarding — affiché avant l'auth pour les nouveaux utilisateurs
   if (showOnboarding) {
     return <OnboardingScreen onDone={handleOnboardingDone} userId={user?.id || null} />;
+  }
+  if (showSubscriptionOnboarding) {
+    return <SubscriptionScreen currentPlan='free' setUserPlan={setUserPlan} onBack={()=>setShowSubscriptionOnboarding(false)} />;
   }
 
   if (!user) return <AuthScreen onLogin={setUser} onSignup={function(u){setUser(u);setShowOnboarding(true);}} />;
@@ -223,7 +229,7 @@ function AppContent() {
           },
         }}>
         <Tab.Screen name="Accueil"
-          children={() => <HomeScreen user={user} onGoToLive={goToLive} onSelectSport={setCurrentSport} />}
+          children={() => <HomeScreen user={user} onGoToLive={goToLive} onSelectSport={setCurrentSport} userPlan={userPlan} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" label={t('tabHome')} focused={focused} /> }}
         />
         <Tab.Screen name="Live"
@@ -231,7 +237,7 @@ function AppContent() {
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📺" label={t('tabLive')} focused={focused} /> }}
         />
         <Tab.Screen name="Conseils"
-          children={() => <ConseilsScreen userPlan={userPlan} />}
+          children={() => <ConseilsScreen userPlan={userPlan} user={user} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔮" label={t('tabConseils')} focused={focused} /> }}
         />
         <Tab.Screen name="Agenda"

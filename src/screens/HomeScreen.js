@@ -55,7 +55,7 @@ function isInGMTWindow(heureDebut, heureFin) {
   else { return nowMinutes >= debut || nowMinutes <= fin; }
 }
 
-export default function HomeScreen({ user, onGoToLive, onSelectSport }) {
+export default function HomeScreen({ user, onGoToLive, onSelectSport, userPlan='free' }) {
   const { t, language } = useLanguage();
   const [upcomingGames, setUpcomingGames] = useState([]);
   const [liveGames, setLiveGames] = useState([]);
@@ -66,6 +66,7 @@ export default function HomeScreen({ user, onGoToLive, onSelectSport }) {
   const [showMatchDuJour, setShowMatchDuJour] = useState(false);
   const [showPredict, setShowPredict] = useState(false);
   const [activeEvent, setActiveEvent] = useState(null);
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
   const logoTapCount = useRef(0);
   const logoTapTimer = useRef(null);
 
@@ -184,6 +185,14 @@ export default function HomeScreen({ user, onGoToLive, onSelectSport }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      {userPlan === 'free' && showUpgradeBanner && (
+        <TouchableOpacity activeOpacity={0.9} style={{backgroundColor:'#FF6B2B',paddingHorizontal:16,paddingVertical:10,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+          <Text style={{color:'#fff',fontFamily:'BebasNeue',fontSize:13,letterSpacing:1}}>⭐ UPGRADE TO KAZMO PRO — 7 DAYS FREE</Text>
+          <TouchableOpacity onPress={()=>setShowUpgradeBanner(false)} style={{padding:4}}>
+            <Text style={{color:'#fff',fontSize:16}}>✕</Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      )}
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <TouchableOpacity activeOpacity={1} onPress={handleLogoTap}>
