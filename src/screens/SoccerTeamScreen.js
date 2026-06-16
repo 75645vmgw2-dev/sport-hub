@@ -190,9 +190,9 @@ export default function SoccerTeamScreen({ team, league, onBack }) {
                 const oppName = isHome ? f.teams.away.name : f.teams.home.name;
                 const oppLogo = isHome ? f.teams.away.logo : f.teams.home.logo;
                 const isFinished = ['FT','AET','PEN'].indexOf(f.fixture.status.short) >= 0;
-                const win = isFinished && (myScore||0) > (oppScore||0);
-                const draw = isFinished && (myScore||0) === (oppScore||0);
-                const lose = isFinished && (myScore||0) < (oppScore||0);
+                const win = isFinished && myScore !== null && oppScore !== null && myScore > oppScore;
+                const draw = isFinished && myScore !== null && oppScore !== null && myScore === oppScore;
+                const lose = isFinished && myScore !== null && oppScore !== null && myScore < oppScore;
                 return (
                   <View key={i} style={[styles.gameCard, {
                     borderLeftColor: win ? '#4CAF50' : draw ? '#FFD700' : '#E53935',

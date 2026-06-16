@@ -636,6 +636,7 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
   function FormSection({ games, teamName, teamColor }) {
     const shown = (games||[]).slice(0,period);
     const wins = shown.filter(function(g){return g.win;}).length;
+    const draws = shown.filter(function(g){return g.draw;}).length;
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -643,7 +644,9 @@ export default function MatchDetailScreen({ match, sport, color, onBack }) {
           <View style={styles.recordRow}>
             <Text style={[styles.recordNum,{color:'#4CAF50'}]}>{wins}V</Text>
             <Text style={styles.recordSep}> · </Text>
-            <Text style={[styles.recordNum,{color:'#E53935'}]}>{shown.length-wins}D</Text>
+            <Text style={[styles.recordNum,{color:'#FFD700'}]}>{draws}N</Text>
+            <Text style={styles.recordSep}> · </Text>
+            <Text style={[styles.recordNum,{color:'#E53935'}]}>{shown.length-wins-draws}D</Text>
           </View>
         </View>
         <View style={styles.formBadges}>
