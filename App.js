@@ -85,6 +85,7 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [currentSport, setCurrentSport] = useState(null);
   const [userPlan, setUserPlan] = useState('free');
+  const [planLoading, setPlanLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSubscriptionOnboarding, setShowSubscriptionOnboarding] = useState(false);
   const [showSubscriptionUpgrade, setShowSubscriptionUpgrade] = useState(false);
@@ -99,6 +100,7 @@ function AppContent() {
         const adminEmails = ['jack.melki@mac.com', 'melkijackus@gmail.com'];
         if (user && adminEmails.includes(user.email)) {
           setUserPlan('planB');
+          setPlanLoading(false);
           return;
         }
         Purchases.configure({ apiKey: 'appl_eXPAcbVJEJcyzNsTcXnHwMENIZX' });
@@ -107,6 +109,7 @@ function AppContent() {
         else if (info.entitlements.active['plan_a']) setUserPlan('planA');
         else setUserPlan('free');
       } catch(e) { console.log('RevenueCat init error:', e); }
+      setPlanLoading(false);
     }
     initRevenueCat();
   }, [user]);
@@ -241,7 +244,7 @@ function AppContent() {
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📺" label={t('tabLive')} focused={focused} /> }}
         />
         <Tab.Screen name="Conseils"
-          children={() => <ConseilsScreen userPlan={userPlan} user={user} onUpgrade={()=>setShowSubscriptionUpgrade(true)} />}
+          children={() => <ConseilsScreen userPlan={userPlan} user={user} onUpgrade={()=>setShowSubscriptionUpgrade(true)} planLoading={planLoading} />}
           options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔮" label={t('tabConseils')} focused={focused} /> }}
         />
         <Tab.Screen name="Agenda"
