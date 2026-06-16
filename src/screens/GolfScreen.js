@@ -1,4 +1,5 @@
 import { ANTHROPIC_KEY, API_SPORTS_KEY, RAPIDAPI_GOLF_KEY } from '../api/keys';
+import { supabase } from '../api/supabase';
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -98,7 +99,7 @@ function PlayerSearchModal({ rankings, onSelect, onClose }) {
             {filtered.map(function(p, i) {
               return (
                 <TouchableOpacity key={i} style={styles.searchResult}
-                  onPress={() => { onSelect({id:p.playerId, name:p.fullName, rank:p.rank, points:p.totalPoints}); onClose(); }}>
+                  onPress={() => { onSelect({id:p.playerId, name:p.fullName, rank:mongoVal(p.rank), points:mongoVal(p.totalPoints)}); onClose(); }}>
                   <View style={styles.searchResultAvatar}>
                     <Text style={styles.searchResultAvatarText}>⛳</Text>
                   </View>
@@ -205,7 +206,7 @@ function GolfPlayerScreen({ player, schedule, onBack, user }) {
       const recentStr = recentTournaments.filter(function(t){return t.played;}).slice(0,5).map(function(t){
         return t.name+': #'+t.position+' ('+t.score+')';
       }).join('\n');
-      const prompt = 'Tu es Kazmo, assistant IA sportif premium.\nAnalyse le golfeur : '+player.name+'\n\nStats:\n- Classement mondial: #'+player.rank+'\n- Points: '+(player.points?Number(player.points).toFixed(2):'?')+'\n\nRésultats récents:\n'+(recentStr||'Non disponible')+'\n\nFais une analyse complète : style de jeu, points forts, majeurs gagnés, forme actuelle, perspectives. Answer in language: ' + (language||'en') + '.';
+      const prompt = 'Tu es Kazmo, assistant IA sportif premium.\nAnalyse le golfeur : '+player.name+'\n\nStats:\n- Classement mondial: #'+player.rank+'\n- Points: '+(player.points&&player.points!=='?'?Number(player.points).toFixed(2):'?')+'\n\nRésultats récents:\n'+(recentStr||'Non disponible')+'\n\nFais une analyse complète : style de jeu, points forts, majeurs gagnés, forme actuelle, perspectives. Answer in language: ' + (language||'en') + '.';
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST', headers:H_ANTHROPIC,
         body:JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:800, messages:[{role:'user',content:prompt}] }),
@@ -589,7 +590,7 @@ export default function GolfScreen({ onBack, user }) {
                     const rankInfo = rankings.find(function(r){return String(r.playerId)===String(pid);});
                     return (
                       <TouchableOpacity key={i}
-                        onPress={() => pid&&setSelectedPlayer({id:pid,name,rank:rankInfo?rankInfo.rank:'?',points:rankInfo?rankInfo.totalPoints:'?'})}
+                        onPress={() => pid&&setSelectedPlayer({id:pid,name,rank:rankInfo?mongoVal(rankInfo.rank):'?',points:rankInfo?mongoVal(rankInfo.totalPoints):'?'})}
                         style={[styles.tableRow,{
                           backgroundColor:i%2===0?'#16162a':'#0d0d1a',
                           borderLeftColor:i===0?'#FFD700':i<3?C:'#ffffff22',
@@ -624,7 +625,7 @@ export default function GolfScreen({ onBack, user }) {
               {rankings.map(function(r, i) {
                 return (
                   <TouchableOpacity key={i}
-                    onPress={() => setSelectedPlayer({id:r.playerId,name:r.fullName,rank:r.rank,points:r.totalPoints})}
+                    onPress={() => setSelectedPlayer({id:r.playerId,name:r.fullName,rank:mongoVal(r.rank),points:mongoVal(r.totalPoints)})}
                     style={[styles.tableRow,{
                       backgroundColor:i%2===0?'#16162a':'#0d0d1a',
                       borderLeftColor:i===0?'#FFD700':i<3?C:'#ffffff22',
