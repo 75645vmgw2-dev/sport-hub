@@ -460,7 +460,7 @@ export default function GolfScreen({ onBack, user }) {
         return end && end < now && end.getFullYear() === currentYear;
       }).reverse();
 
-      setSchedule([...(current?[{...current,isCurrent:true}]:[]), ...upcoming.slice(0,12), ...past]);
+      setSchedule([...(current?[{...current,isCurrent:true}]:[]), ...upcoming.slice(0,12).map(function(t){return{...t,isPast:false};}), ...past.map(function(t){return{...t,isPast:true};})]);
       setCurrentTournament(current||null);
 
       const rawRankings = (rankData.rankings||[]).slice(0,100).map(function(r) {
@@ -536,12 +536,19 @@ export default function GolfScreen({ onBack, user }) {
               {schedule.length === 0 ? (
                 <View style={styles.emptyBox}><Text style={styles.emptyText}>Calendrier non disponible</Text></View>
               ) : schedule.map(function(t, i) {
+                const isPastT = !!t.isPast;
+                const prevIsPastT = i > 0 && !!schedule[i-1].isPast;
+                const showCompletedHeader = isPastT && !prevIsPastT;
+                const showUpcomingHeader = i === 0 && !isPastT;
                 const isCurrent = t.isCurrent;
                 const start = t.date?.start ? formatDate(t.date.start) : '';
                 const end = t.date?.end ? formatDate(t.date.end) : '';
                 const purseNum = t.purse ? Number(String(t.purse).replace(/[^0-9.]/g,'')) : 0;
                 return (
-                  <TouchableOpacity key={i}
+                  <React.Fragment key={i}>
+                  {showUpcomingHeader && <Text style={[styles.sectionTitle,{color:'#4CAF50',marginBottom:8}]}>⛳ UPCOMING & CURRENT</Text>}
+                  {showCompletedHeader && <Text style={[styles.sectionTitle,{color:'#ffffff55',marginTop:16,marginBottom:8}]}>✅ COMPLETED</Text>}
+                  <TouchableOpacity key={'c'+i}
                     style={[styles.tournCard, isCurrent&&{borderColor:C,borderWidth:1}]}
                     onPress={() => { if(t.tournId){ fetchLeaderboard(t.tournId); setTab('leaderboard'); } }}>
                     <View style={styles.tournHeader}>
@@ -559,7 +566,9 @@ export default function GolfScreen({ onBack, user }) {
                     <Text style={[styles.tournName, isCurrent&&{color:'#4CAF50'}]}>{t.name||'Tournoi'}</Text>
                     <Text style={styles.tournDate}>🗓 {start}{end&&end!==start?' - '+end:''}</Text>
                     {t.course?.name ? <Text style={styles.tournCourse}>📍 {t.course.name}</Text> : null}
+                    {(function(){ const s=t.date?.start?new Date(t.date.start):null; return s&&s<new Date()&&!t.isCurrent; })() && <View style={{backgroundColor:'#ffffff11',borderRadius:4,paddingHorizontal:6,paddingVertical:2,alignSelf:'flex-start',marginTop:4}}><Text style={{color:'#ffffff55',fontSize:9,fontFamily:'BebasNeue'}}>FINISHED</Text></View>}
                   </TouchableOpacity>
+                  </React.Fragment>
                 );
               })}
             </View>
@@ -624,7 +633,10 @@ export default function GolfScreen({ onBack, user }) {
               </View>
               {rankings.map(function(r, i) {
                 return (
-                  <TouchableOpacity key={i}
+                  <React.Fragment key={i}>
+                  {showUpcomingHeader && <Text style={[styles.sectionTitle,{color:'#4CAF50',marginBottom:8}]}>⛳ UPCOMING & CURRENT</Text>}
+                  {showCompletedHeader && <Text style={[styles.sectionTitle,{color:'#ffffff55',marginTop:16,marginBottom:8}]}>✅ COMPLETED</Text>}
+                  <TouchableOpacity key={'c'+i}
                     onPress={() => setSelectedPlayer({id:r.playerId,name:r.fullName,rank:mongoVal(r.rank),points:mongoVal(r.totalPoints)})}
                     style={[styles.tableRow,{
                       backgroundColor:i%2===0?'#16162a':'#0d0d1a',
@@ -645,6 +657,7 @@ export default function GolfScreen({ onBack, user }) {
                     </Text>
                     <Text style={styles.rankArrow}>›</Text>
                   </TouchableOpacity>
+                  </React.Fragment>
                 );
               })}
             </View>
