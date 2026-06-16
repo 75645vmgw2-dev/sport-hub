@@ -97,7 +97,7 @@ function AppContent() {
     async function initRevenueCat() {
       try {
         // Admins ont accès Elite gratuit
-        const adminEmails = ['jack.melki@mac.com', 'melkijackus@gmail.com'];
+        const adminEmails = ['jack.melki@mac.com', 'melkijackus@gmail.com', 'bckhn2k576@privaterelay.appleid.com'];
         if (user && adminEmails.includes(user.email)) {
           setUserPlan('planB');
           setPlanLoading(false);

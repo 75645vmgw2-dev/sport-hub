@@ -29,7 +29,7 @@ export default function BetsScreen({ user, onBack, userPlan='free' }) {
   const [editingBet, setEditingBet] = useState(null);
   const [filterResult, setFilterResult] = useState('all');
 
-  if (userPlan === 'free') {
+  if (false && userPlan === 'free') {
     return (
       <SafeAreaView style={{flex:1,backgroundColor:'#080814',alignItems:'center',justifyContent:'center',padding:24}}>
         <Text style={{fontSize:40,marginBottom:16}}>📊</Text>

@@ -286,7 +286,7 @@ function GolfPlayerScreen({ player, schedule, onBack, user }) {
                 <Text style={styles.statLabel}>Classement</Text>
               </View>
               <View style={[styles.statCard,{borderColor:C+'44'}]}>
-                <Text style={[styles.statValue,{color:C,fontSize:18}]}>{player.points?Number(player.points).toFixed(1):'?'}</Text>
+                <Text style={[styles.statValue,{color:C,fontSize:18}]}>{player.points&&player.points!=='?'?Number(player.points).toFixed(1):'?'}</Text>
                 <Text style={styles.statLabel}>Points</Text>
               </View>
             </View>

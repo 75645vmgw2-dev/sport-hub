@@ -680,15 +680,7 @@ function ConseilsGuides({ t, language }) {
 export default function ConseilsScreen({ userPlan='free', user, onUpgrade, planLoading=false }) {
   const { t, language } = useLanguage();
 
-  if (planLoading) {
-    return (
-      <SafeAreaView style={{flex:1,backgroundColor:'#080814',alignItems:'center',justifyContent:'center'}}>
-        <ActivityIndicator color="#FF6B2B" size="large" />
-      </SafeAreaView>
-    );
-  }
-
-  if (userPlan === 'free') {
+  if (false && userPlan === 'free') {
     return (
       <SafeAreaView style={{flex:1,backgroundColor:'#080814',alignItems:'center',justifyContent:'center',padding:24}}>
         <Text style={{fontSize:40,marginBottom:16}}>🔮</Text>
